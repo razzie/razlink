@@ -1,0 +1,103 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"html/template"
+	"io"
+	"net/http"
+	"strconv"
+)
+
+var logsPasswordPage = `
+<form method="post">
+	<input type="password" name="password" />
+	<input type="submit" value="Submit" />
+</form>
+`
+
+var logsPage = `
+<ul>
+	{{range .Logs}}
+	<li>{{.}}</li>
+	{{end}}
+</ul>
+`
+
+func main() {
+	port := flag.Int("port", 8081, "Port")
+	flag.Parse()
+
+	entries := make(map[string]*Entry)
+
+	entries["test_proxy"] = NewEntry(
+		"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
+		"asdasd",
+		true)
+
+	entries["test_redirect"] = NewEntry(
+		"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
+		"asdasd",
+		false)
+
+	logsPageT, err := template.New("").Parse(logsPage)
+	if err != nil {
+		panic(err)
+	}
+
+	http.HandleFunc("/x/", func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Path[3:]
+		entry, ok := entries[id]
+		if !ok {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+
+		if entry.Proxy {
+			req, _ := http.NewRequest("GET", entry.URL, nil)
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			for k, v := range resp.Header {
+				w.Header().Set(k, v[0])
+			}
+			w.WriteHeader(resp.StatusCode)
+			io.Copy(w, resp.Body)
+			resp.Body.Close()
+		} else {
+			http.Redirect(w, r, entry.URL, http.StatusSeeOther)
+		}
+
+		entry.Log(r.RemoteAddr)
+	})
+
+	http.HandleFunc("/logs/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		if r.Method != "POST" {
+			fmt.Fprint(w, logsPasswordPage)
+			return
+		}
+
+		r.ParseForm()
+		pw := r.FormValue("password")
+
+		id := r.URL.Path[6:]
+		entry, ok := entries[id]
+		if !ok {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+		if !entry.MatchPassword(pw) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		logsPageT.Execute(w, entry)
+	})
+
+	http.ListenAndServe("localhost:"+strconv.Itoa(*port), nil)
+}
