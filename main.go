@@ -19,6 +19,11 @@ var addPage = `
 </form>
 `
 
+var addResultPage = `
+<a href="http://{{.Hostname}}/x/{{.ID}}">{{.Hostname}}/x/{{.ID}}</a><br />
+<a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
+`
+
 var logsPasswordPage = `
 <form method="post">
 	<input type="password" name="password" />
@@ -35,6 +40,7 @@ var logsPage = `
 `
 
 func main() {
+	hostname := flag.String("hostname", "link.gorzsony.com", "Hostname")
 	port := flag.Int("port", 8081, "Port")
 	flag.Parse()
 
@@ -49,6 +55,11 @@ func main() {
 		"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
 		"asdasd",
 		false)
+
+	addResultPageT, err := template.New("").Parse(addResultPage)
+	if err != nil {
+		panic(err)
+	}
 
 	logsPageT, err := template.New("").Parse(logsPage)
 	if err != nil {
@@ -69,7 +80,20 @@ func main() {
 
 		entry := NewEntry(url, pw, proxy)
 		entries[entry.ID] = entry
-		http.Redirect(w, r, "/x/"+entry.ID, http.StatusSeeOther)
+		http.Redirect(w, r, "/add/"+entry.ID, http.StatusSeeOther)
+	})
+
+	http.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		id := r.URL.Path[5:]
+		view := struct {
+			Hostname string
+			ID       string
+		}{
+			Hostname: *hostname,
+			ID:       id,
+		}
+		addResultPageT.Execute(w, view)
 	})
 
 	http.HandleFunc("/x/", func(w http.ResponseWriter, r *http.Request) {
