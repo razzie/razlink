@@ -9,6 +9,16 @@ import (
 	"strconv"
 )
 
+var addPage = `
+<form method="post">
+	URL: <input type="text" name="url" /><br />
+	Log password: <input type="password" name="password" /><br />
+	<input type="radio" name="method" value="proxy" checked />Proxy
+	<input type="radio" name="method" value="redirect" />Redirect<br />
+	<input type="submit" value="Submit" />
+</form>
+`
+
 var logsPasswordPage = `
 <form method="post">
 	<input type="password" name="password" />
@@ -45,6 +55,23 @@ func main() {
 		panic(err)
 	}
 
+	http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			fmt.Fprint(w, addPage)
+			return
+		}
+
+		r.ParseForm()
+		url := r.FormValue("url")
+		pw := r.FormValue("password")
+		proxy := r.FormValue("method") == "proxy"
+
+		entry := NewEntry(url, pw, proxy)
+		entries[entry.ID] = entry
+		http.Redirect(w, r, "/x/"+entry.ID, http.StatusSeeOther)
+	})
+
 	http.HandleFunc("/x/", func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Path[3:]
 		entry, ok := entries[id]
@@ -71,7 +98,7 @@ func main() {
 			http.Redirect(w, r, entry.URL, http.StatusSeeOther)
 		}
 
-		entry.Log(r.RemoteAddr)
+		entry.Log(r.Header.Get("X-REAL-IP"))
 	})
 
 	http.HandleFunc("/logs/", func(w http.ResponseWriter, r *http.Request) {
