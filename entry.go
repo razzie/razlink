@@ -1,12 +1,5 @@
 package main
 
-import (
-	"crypto/sha1"
-	"encoding/hex"
-	"strconv"
-	"time"
-)
-
 // Entry ...
 type Entry struct {
 	ID           string
@@ -19,7 +12,7 @@ type Entry struct {
 
 // NewEntry ...
 func NewEntry(url, password string, proxy bool) *Entry {
-	id := strconv.FormatInt(time.Now().UnixNano(), 16)
+	id := NewID()
 	salt := id
 
 	return &Entry{
@@ -27,23 +20,17 @@ func NewEntry(url, password string, proxy bool) *Entry {
 		URL:          url,
 		Proxy:        proxy,
 		Salt:         salt,
-		PasswordHash: hash(salt + password),
+		PasswordHash: Hash(salt + password),
 	}
 }
 
 // MatchPassword ...
 func (entry *Entry) MatchPassword(password string) bool {
-	return entry.PasswordHash == hash(entry.Salt+password)
+	return entry.PasswordHash == Hash(entry.Salt+password)
 }
 
 // Log ...
 func (entry *Entry) Log(ip string) {
 	l := NewLog(ip)
 	entry.Logs = append(entry.Logs, l)
-}
-
-func hash(s string) string {
-	algorithm := sha1.New()
-	algorithm.Write([]byte(s))
-	return hex.EncodeToString(algorithm.Sum(nil))
 }
