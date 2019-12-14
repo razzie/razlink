@@ -44,17 +44,7 @@ func main() {
 	port := flag.Int("port", 8081, "Port")
 	flag.Parse()
 
-	entries := make(map[string]*Entry)
-
-	entries["test_proxy"] = NewEntry(
-		"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
-		"asdasd",
-		true)
-
-	entries["test_redirect"] = NewEntry(
-		"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
-		"asdasd",
-		false)
+	db := NewDB()
 
 	addResultPageT, err := template.New("").Parse(addResultPage)
 	if err != nil {
@@ -78,9 +68,8 @@ func main() {
 		pw := r.FormValue("password")
 		proxy := r.FormValue("method") == "proxy"
 
-		entry := NewEntry(url, pw, proxy)
-		entries[entry.ID] = entry
-		http.Redirect(w, r, "/add/"+entry.ID, http.StatusSeeOther)
+		e := db.InsertEntry(url, pw, proxy)
+		http.Redirect(w, r, "/add/"+e.ID, http.StatusSeeOther)
 	})
 
 	http.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {
@@ -98,14 +87,14 @@ func main() {
 
 	http.HandleFunc("/x/", func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Path[3:]
-		entry, ok := entries[id]
-		if !ok {
+		e := db.GetEntry(id)
+		if e == nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
 
-		if entry.Proxy {
-			req, _ := http.NewRequest("GET", entry.URL, nil)
+		if e.Proxy {
+			req, _ := http.NewRequest("GET", e.URL, nil)
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -119,10 +108,10 @@ func main() {
 			io.Copy(w, resp.Body)
 			resp.Body.Close()
 		} else {
-			http.Redirect(w, r, entry.URL, http.StatusSeeOther)
+			http.Redirect(w, r, e.URL, http.StatusSeeOther)
 		}
 
-		entry.Log(r.Header.Get("X-REAL-IP"))
+		db.InsertLog(id, r.Header.Get("X-REAL-IP"))
 	})
 
 	http.HandleFunc("/logs/", func(w http.ResponseWriter, r *http.Request) {
@@ -137,17 +126,17 @@ func main() {
 		pw := r.FormValue("password")
 
 		id := r.URL.Path[6:]
-		entry, ok := entries[id]
-		if !ok {
+		e := db.GetEntry(id)
+		if e == nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
-		if !entry.MatchPassword(pw) {
+		if !e.MatchPassword(pw) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		logsPageT.Execute(w, entry)
+		logsPageT.Execute(w, e)
 	})
 
 	http.ListenAndServe("localhost:"+strconv.Itoa(*port), nil)
