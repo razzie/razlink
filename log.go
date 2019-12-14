@@ -7,9 +7,11 @@ import (
 
 // Log ...
 type Log struct {
-	Time     time.Time
-	IP       string
-	Location Location
+	Time        time.Time
+	IP          string
+	CountryName string
+	RegionName  string
+	City        string
 }
 
 // NewLog ...
@@ -18,12 +20,19 @@ func NewLog(ip string) Log {
 
 	loc, _ := GetLocation(ip)
 	if loc != nil {
-		l.Location = *loc
+		l.CountryName = loc.CountryName
+		l.RegionName = loc.RegionName
+		l.City = loc.City
 	}
 
 	return l
 }
 
 func (l Log) String() string {
-	return fmt.Sprintf("%s - %s (%s)", l.Time, l.IP, l.Location.String())
+	return fmt.Sprintf("%s - %s (%s/%s/%s)",
+		l.Time.Format(time.RFC3339),
+		l.IP,
+		l.CountryName,
+		l.RegionName,
+		l.City)
 }
