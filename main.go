@@ -163,5 +163,9 @@ func main() {
 		logsPageT.Execute(w, e)
 	})
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/add", http.StatusSeeOther)
+	})
+
 	http.ListenAndServe("localhost:"+strconv.Itoa(*port), nil)
 }
