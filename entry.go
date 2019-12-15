@@ -4,20 +4,20 @@ package main
 type Entry struct {
 	ID           string
 	URL          string
-	Proxy        bool
+	Method       ServeMethod
 	Salt         string
 	PasswordHash string
 }
 
 // NewEntry ...
-func NewEntry(url, password string, proxy bool) *Entry {
+func NewEntry(url, password string, method ServeMethod) *Entry {
 	id := NewID()
 	salt := id
 
 	return &Entry{
 		ID:           id,
 		URL:          url,
-		Proxy:        proxy,
+		Method:       method,
 		Salt:         salt,
 		PasswordHash: Hash(salt + password),
 	}

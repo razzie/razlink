@@ -15,8 +15,8 @@ func NewDB() *DB {
 }
 
 // InsertEntry inserts a new entry to the database
-func (db *DB) InsertEntry(url, password string, proxy bool) *Entry {
-	e := NewEntry(url, password, proxy)
+func (db *DB) InsertEntry(url, password string, method ServeMethod) *Entry {
+	e := NewEntry(url, password, method)
 	db.entries[e.ID] = e
 	return e
 }

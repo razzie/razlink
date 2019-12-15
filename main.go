@@ -13,8 +13,6 @@ var addPage = `
 <form method="post">
 	URL: <input type="text" name="url" /><br />
 	Log password: <input type="password" name="password" /><br />
-	<input type="radio" name="method" value="proxy" checked />Proxy
-	<input type="radio" name="method" value="redirect" />Redirect<br />
 	<input type="submit" value="Submit" />
 </form>
 `
@@ -39,6 +37,10 @@ var logsPage = `
 </ul>
 `
 
+var embedPage = `
+<iframe src="{{.}}" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>
+`
+
 func main() {
 	hostname := flag.String("hostname", "link.gorzsony.com", "Hostname")
 	port := flag.Int("port", 8081, "Port")
@@ -56,6 +58,11 @@ func main() {
 		panic(err)
 	}
 
+	embedPageT, err := template.New("").Parse(embedPage)
+	if err != nil {
+		panic(err)
+	}
+
 	http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -66,9 +73,13 @@ func main() {
 		r.ParseForm()
 		url := r.FormValue("url")
 		pw := r.FormValue("password")
-		proxy := r.FormValue("method") == "proxy"
+		method, err := GetServeMethodForURL(url)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		e := db.InsertEntry(url, pw, proxy)
+		e := db.InsertEntry(url, pw, method)
 		http.Redirect(w, r, "/add/"+e.ID, http.StatusSeeOther)
 	})
 
@@ -93,11 +104,18 @@ func main() {
 			return
 		}
 
-		if e.Proxy {
+		switch e.Method {
+		case Proxy:
 			req, _ := http.NewRequest("GET", e.URL, nil)
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				http.Error(w, resp.Status, resp.StatusCode)
 				return
 			}
 
@@ -106,9 +124,15 @@ func main() {
 			}
 			w.WriteHeader(resp.StatusCode)
 			io.Copy(w, resp.Body)
-			resp.Body.Close()
-		} else {
+
+		case Embed:
+			embedPageT.Execute(w, e.URL)
+
+		case Redirect:
 			http.Redirect(w, r, e.URL, http.StatusSeeOther)
+
+		default:
+			http.Error(w, "Invalid serve method", http.StatusInternalServerError)
 		}
 
 		db.InsertLog(id, r.Header.Get("X-REAL-IP"))

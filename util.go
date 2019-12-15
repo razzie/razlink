@@ -3,7 +3,10 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"mime"
+	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -24,4 +27,24 @@ func Hash(s string) string {
 	algorithm := sha1.New()
 	algorithm.Write([]byte(s))
 	return hex.EncodeToString(algorithm.Sum(nil))
+}
+
+// HasContentType determines whether the request `content-type` includes a
+// server-acceptable mime-type
+func HasContentType(header http.Header, mimetype string) bool {
+	contentType := header.Get("Content-type")
+	if contentType == "" {
+		return mimetype == "application/octet-stream"
+	}
+
+	for _, v := range strings.Split(contentType, ",") {
+		t, _, err := mime.ParseMediaType(v)
+		if err != nil {
+			break
+		}
+		if t == mimetype {
+			return true
+		}
+	}
+	return false
 }
