@@ -11,7 +11,7 @@ func main() {
 	port := flag.Int("port", 8081, "Port")
 	flag.Parse()
 
-	db := NewDB()
+	db := NewDB("localhost:6379", "", 0)
 
 	mux := http.DefaultServeMux
 	installAddPage(db, mux, *hostname)

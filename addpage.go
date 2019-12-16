@@ -41,7 +41,12 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 			return
 		}
 
-		e := db.InsertEntry(url, pw, method)
+		e, err := db.InsertEntry(url, pw, method)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		http.Redirect(w, r, "/add/"+e.ID, http.StatusSeeOther)
 	})
 

@@ -18,7 +18,7 @@ func installViewPage(db *DB, mux *http.ServeMux) {
 
 	mux.HandleFunc("/x/", func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Path[3:]
-		e := db.GetEntry(id)
+		e, _ := db.GetEntry(id)
 		if e == nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
