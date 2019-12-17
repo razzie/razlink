@@ -13,16 +13,27 @@ type DB struct {
 }
 
 // NewDB returns a new DB
-func NewDB(addr, password string, db int) *DB {
+func NewDB(addr, password string, db int) (*DB, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
 	})
 
+	err := client.Ping().Err()
+	if err != nil {
+		client.Close()
+		return nil, err
+	}
+
 	return &DB{
 		client: client,
-	}
+	}, nil
+}
+
+// Close closes the connection to the database
+func (db *DB) Close() error {
+	return db.client.Close()
 }
 
 // InsertEntry inserts a new entry to the database
