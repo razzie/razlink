@@ -7,18 +7,28 @@ import (
 )
 
 var logsPasswordPage = `
-<form method="post">
-	<input type="password" name="password" />
-	<input type="submit" value="Submit" />
-</form>
+<div style="display: flex; align-items: center; justify-content: center">
+	<div style="border: 1px solid black; padding: 1rem; display: inline-flex">
+		<form method="post">
+			Log password:<br />
+			<input type="password" name="password" /><br />
+			<br />
+			<input type="submit" value="Submit" />
+		</form>
+	</div>
+</div>
 `
 
 var logsPage = `
-<ul>
-	{{range .}}
-	<li>{{.}}</li>
-	{{end}}
-</ul>
+<div style="display: flex; align-items: center; justify-content: center">
+	<div style="border: 1px solid black; padding: 1rem; display: inline-flex">
+		<ul>
+			{{range .}}
+			<li>{{.}}</li>
+			{{end}}
+		</ul>
+	</div>
+</div>
 `
 
 func installLogPage(db *DB, mux *http.ServeMux) {
