@@ -50,7 +50,7 @@ func HasContentType(header http.Header, mimetype string) bool {
 }
 
 func getIDFromRequest(r *http.Request) (string, bool) {
-	parts := strings.SplitN(r.URL.Path, "/", 3)
+	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 3 {
 		return "", false
 	}

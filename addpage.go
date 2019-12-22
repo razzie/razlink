@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"path/filepath"
 )
 
 var addPage = `
@@ -30,6 +31,9 @@ var addResultPage = `
 			<br />
 			Access the target URL:<br />
 			<a href="http://{{.Hostname}}/x/{{.ID}}">{{.Hostname}}/x/{{.ID}}</a><br />
+			{{if .Decoy}}
+			<a href="http://{{.Hostname}}/x/{{.ID}}/{{.Decoy}}">{{.Hostname}}/x/{{.ID}}/{{.Decoy}}</a><br />
+			{{end}}
 			<br />
 			Access logs:<br />
 			<a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
@@ -60,6 +64,11 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 			return
 		}
 
+		decoy := filepath.Base(url)
+		if len(decoy) < 2 {
+			decoy = ""
+		}
+
 		e, err := db.InsertEntry(url, pw, method)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -68,7 +77,7 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 
 		db.InsertLog(e.ID, r.Header.Get("X-REAL-IP"))
 
-		http.Redirect(w, r, "/add/"+e.ID, http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/add/%s/%s", e.ID, decoy), http.StatusSeeOther)
 	})
 
 	mux.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +86,11 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 		view := struct {
 			Hostname string
 			ID       string
+			Decoy    string
 		}{
 			Hostname: hostname,
 			ID:       id,
+			Decoy:    r.URL.Path[5+len(id)+1:],
 		}
 		addResultPageT.Execute(w, view)
 	})
