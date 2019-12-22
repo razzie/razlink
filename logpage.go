@@ -38,7 +38,7 @@ func installLogPage(db *DB, mux *http.ServeMux) {
 		r.ParseForm()
 		pw := r.FormValue("password")
 
-		id := r.URL.Path[6:]
+		id, _ := getIDFromRequest(r)
 		e, _ := db.GetEntry(id)
 		if e == nil {
 			http.Error(w, "Not found", http.StatusNotFound)

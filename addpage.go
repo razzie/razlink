@@ -47,12 +47,14 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 			return
 		}
 
+		db.InsertLog(e.ID, r.Header.Get("X-REAL-IP"))
+
 		http.Redirect(w, r, "/add/"+e.ID, http.StatusSeeOther)
 	})
 
 	mux.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		id := r.URL.Path[5:]
+		id, _ := getIDFromRequest(r)
 		view := struct {
 			Hostname string
 			ID       string

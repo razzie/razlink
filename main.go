@@ -26,9 +26,9 @@ func main() {
 	installViewPage(db, mux)
 	installLogPage(db, mux)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/add", http.StatusSeeOther)
 	})
 
-	http.ListenAndServe("localhost:"+strconv.Itoa(*port), nil)
+	http.ListenAndServe("localhost:"+strconv.Itoa(*port), mux)
 }

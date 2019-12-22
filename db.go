@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -9,7 +10,8 @@ import (
 
 // DB ...
 type DB struct {
-	client *redis.Client
+	ExpirationTime time.Duration
+	client         *redis.Client
 }
 
 // NewDB returns a new DB
@@ -27,7 +29,8 @@ func NewDB(addr, password string, db int) (*DB, error) {
 	}
 
 	return &DB{
-		client: client,
+		ExpirationTime: 30 * 24 * time.Hour, // ~1 month
+		client:         client,
 	}, nil
 }
 
@@ -45,9 +48,12 @@ func (db *DB) InsertEntry(url, password string, method ServeMethod) (*Entry, err
 		return nil, err
 	}
 
-	err = db.client.Set(e.ID, string(data), 30*24*time.Hour).Err()
+	success, err := db.client.SetNX(e.ID, string(data), db.ExpirationTime).Result()
 	if err != nil {
 		return nil, err
+	}
+	if !success {
+		return nil, fmt.Errorf("duplicate ID: %s", e.ID)
 	}
 
 	return e, nil
@@ -66,11 +72,15 @@ func (db *DB) GetEntry(id string) (*Entry, error) {
 		return nil, err
 	}
 
+	db.client.Expire(id, db.ExpirationTime) // reset expiration
+	db.client.Expire(id+"-log", db.ExpirationTime)
+
 	return &e, nil
 }
 
 // DeleteEntry deleted the entry with the given ID
 func (db *DB) DeleteEntry(id string) error {
+	defer db.DeleteLogs(id)
 	return db.client.Del(id).Err()
 }
 
@@ -83,7 +93,16 @@ func (db *DB) InsertLog(entryID, ip string) error {
 		return err
 	}
 
-	return db.client.LPush(entryID+"-log", string(data)).Err()
+	len, err := db.client.LPush(entryID+"-log", string(data)).Result()
+	if err != nil {
+		return err
+	}
+
+	if len == 1 {
+		db.client.Expire(entryID+"-log", db.ExpirationTime)
+	}
+
+	return nil
 }
 
 // GetLogs returns the logs that belong to an entry
