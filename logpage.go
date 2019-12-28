@@ -59,23 +59,29 @@ func installLogPage(db *DB, mux *http.ServeMux) {
 	mux.HandleFunc("/logs/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		if r.Method != "POST" {
-			fmt.Fprint(w, logsPasswordPage)
-			return
-		}
-
-		r.ParseForm()
-		pw := r.FormValue("password")
-
 		id, _ := getIDFromRequest(r)
 		e, _ := db.GetEntry(id)
 		if e == nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
-		if !e.MatchPassword(pw) {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+
+		if r.Method == "POST" {
+			r.ParseForm()
+			pw := r.FormValue("password")
+
+			if !e.MatchPassword(pw) {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			http.SetCookie(w, &http.Cookie{Name: e.ID, Value: e.PasswordHash})
+		} else {
+			cookie, _ := r.Cookie(e.ID)
+			if cookie == nil || cookie.Value != e.PasswordHash {
+				fmt.Fprint(w, logsPasswordPage)
+				return
+			}
 		}
 
 		logs, _ := db.GetLogs(id, 0, 100)
