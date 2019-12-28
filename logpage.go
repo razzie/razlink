@@ -22,11 +22,30 @@ var logsPasswordPage = `
 var logsPage = `
 <div style="display: flex; align-items: center; justify-content: center">
 	<div style="border: 1px solid black; padding: 1rem; display: inline-flex">
-		<ul>
+		<table>
+			<tr>
+				<th>Time</th>
+				<th>IP</th>
+				<th>Addresses</th>
+				<th>Country</th>
+				<th>Region</th>
+				<th>City</th>
+			</tr>
 			{{range .}}
-			<li>{{.}}</li>
+			<tr>
+				<td>{{.Time}}</td>
+				<td>{{.IP}}</td>
+				<td>
+				{{range .Addresses}}
+					{{.}}<br />
+				{{end}}
+				</td>
+				<td>{{.CountryName}}</td>
+				<td>{{.RegionName}}</td>
+				<td>{{.City}}</td>
+			</tr>
 			{{end}}
-		</ul>
+		</table>
 	</div>
 </div>
 `
@@ -59,7 +78,7 @@ func installLogPage(db *DB, mux *http.ServeMux) {
 			return
 		}
 
-		logs, _ := db.GetLogs(id, 0)
+		logs, _ := db.GetLogs(id, 0, 100)
 		logsPageT.Execute(w, logs)
 	})
 }

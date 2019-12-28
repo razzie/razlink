@@ -105,9 +105,9 @@ func (db *DB) InsertLog(entryID, ip string) error {
 	return nil
 }
 
-// GetLogs returns the logs that belong to an entry
-func (db *DB) GetLogs(entryID string, page uint) ([]Log, error) {
-	values, err := db.client.LRange(entryID+"-log", int64(page)*100, int64(page+1)*100).Result()
+// GetLogs returns the Nth page of logs that belong to an entry (pages are 0 based)
+func (db *DB) GetLogs(entryID string, first, last uint) ([]Log, error) {
+	values, err := db.client.LRange(entryID+"-log", int64(first), int64(last)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +122,12 @@ func (db *DB) GetLogs(entryID string, page uint) ([]Log, error) {
 	}
 
 	return logs, nil
+}
+
+// GetLogsCount returns the number of logs that belong to an entry
+func (db *DB) GetLogsCount(entryID string) (uint, error) {
+	value, err := db.client.LLen(entryID + "-log").Result()
+	return uint(value), err
 }
 
 // DeleteLogs deleted all logs that belong to an entry
