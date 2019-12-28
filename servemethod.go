@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // ServeMethod defines how is a request server
@@ -16,9 +18,12 @@ const (
 )
 
 // GetServeMethodForURL tries to determine the best possible serve method for an url
-func GetServeMethodForURL(url string) (ServeMethod, error) {
+func GetServeMethodForURL(ctx context.Context, url string) (ServeMethod, error) {
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
 	req, _ := http.NewRequest("GET", url, nil)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req.WithContext(timeoutCtx))
 	if err != nil {
 		return 0, err
 	}

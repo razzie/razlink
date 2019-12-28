@@ -58,7 +58,7 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 		r.ParseForm()
 		url := r.FormValue("url")
 		pw := r.FormValue("password")
-		method, err := GetServeMethodForURL(url)
+		method, err := GetServeMethodForURL(r.Context(), url)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
