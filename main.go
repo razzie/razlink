@@ -21,14 +21,7 @@ func main() {
 
 	defer db.Close()
 
-	mux := http.DefaultServeMux
-	installAddPage(db, mux, *hostname)
-	installViewPage(db, mux)
-	installLogPage(db, mux)
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/add", http.StatusSeeOther)
-	})
-
-	http.ListenAndServe("localhost:"+strconv.Itoa(*port), mux)
+	addr := "localhost:" + strconv.Itoa(*port)
+	srv := newServer(db, *hostname)
+	http.ListenAndServe(addr, srv)
 }
