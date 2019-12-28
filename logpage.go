@@ -26,12 +26,12 @@ var logsPage = `
 		{{if .Logs}}
 		<table>
 			<tr>
-				<th>Time</th>
-				<th>IP</th>
-				<th>Addresses</th>
-				<th>Country</th>
-				<th>Region</th>
-				<th>City</th>
+				<td><strong>Time</strong></td>
+				<td><strong>IP</strong></td>
+				<td><strong>Addresses</strong></td>
+				<td><strong>Country</strong></td>
+				<td><strong>Region</strong></td>
+				<td><strong>City</strong></td>
 			</tr>
 			{{range .Logs}}
 			<tr>
