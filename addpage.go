@@ -32,7 +32,7 @@ var addResultPage = `
 			Access the target URL:<br />
 			<a href="http://{{.Hostname}}/x/{{.ID}}">{{.Hostname}}/x/{{.ID}}</a><br />
 			{{if .Decoy}}
-			<a href="http://{{.Hostname}}/x/{{.ID}}/{{.Decoy}}">{{.Hostname}}/x/{{.ID}}/{{.Decoy}}</a><br />
+			<a href="http://{{.Hostname}}/x/{{.ID}}{{.Decoy}}">{{.Hostname}}/x/{{.ID}}{{.Decoy}}</a><br />
 			{{end}}
 			<br />
 			Access logs:<br />
@@ -91,7 +91,7 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 		}{
 			Hostname: hostname,
 			ID:       id,
-			Decoy:    r.URL.Path[5+len(id)+1:],
+			Decoy:    r.URL.Path[5+len(id):],
 		}
 		addResultPageT.Execute(w, view)
 	})
