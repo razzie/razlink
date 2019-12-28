@@ -28,6 +28,8 @@ func GetServeMethodForURL(ctx context.Context, url string) (ServeMethod, error) 
 		return 0, err
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("Cannot determine serving method (%s)", resp.Status)
 	}

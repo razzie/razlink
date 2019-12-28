@@ -29,7 +29,7 @@ func installViewPage(db *DB, mux *http.ServeMux) {
 		switch e.Method {
 		case Proxy:
 			req, _ := http.NewRequest("GET", e.URL, nil)
-			resp, err := http.DefaultClient.Do(req)
+			resp, err := http.DefaultClient.Do(req.WithContext(r.Context()))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
