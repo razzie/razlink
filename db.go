@@ -85,8 +85,8 @@ func (db *DB) DeleteEntry(id string) error {
 }
 
 // InsertLog inserts a new log
-func (db *DB) InsertLog(entryID, ip string) error {
-	l := NewLog(ip)
+func (db *DB) InsertLog(entryID, ip, ua string) error {
+	l := NewLog(ip, ua)
 
 	data, err := json.Marshal(l)
 	if err != nil {

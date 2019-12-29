@@ -32,6 +32,8 @@ var logsPage = `
 				<td><strong>Country</strong></td>
 				<td><strong>Region</strong></td>
 				<td><strong>City</strong></td>
+				<td><strong>OS</strong></td>
+				<td><strong>Browser</strong></td>
 			</tr>
 			{{range .Logs}}
 			<tr>
@@ -45,10 +47,12 @@ var logsPage = `
 				<td>{{.CountryName}}</td>
 				<td>{{.RegionName}}</td>
 				<td>{{.City}}</td>
+				<td>{{.OS}}</td>
+				<td>{{.Browser}}</td>
 			</tr>
 			{{end}}
 			<tr>
-				<td colspan="6">
+				<td colspan="8">
 					{{range .Pages}}
 					<a href="{{.}}">{{.}}</a> |
 					{{end}}
