@@ -25,6 +25,6 @@ func newServer(db *DB, hostname string) *server {
 }
 
 func (srv *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	go fmt.Println(r.URL.Path, NewLog(r.Header.Get("X-REAL-IP"), r.UserAgent()))
+	go fmt.Println(NewLog(r.Header.Get("X-REAL-IP"), r.UserAgent()), "- path:", r.URL.Path)
 	srv.mux.ServeHTTP(w, r)
 }
