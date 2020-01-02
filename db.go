@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -85,8 +86,8 @@ func (db *DB) DeleteEntry(id string) error {
 }
 
 // InsertLog inserts a new log
-func (db *DB) InsertLog(entryID, ip, ua string) error {
-	l := NewLog(ip, ua)
+func (db *DB) InsertLog(entryID string, r *http.Request) error {
+	l := NewLog(r)
 
 	data, err := json.Marshal(l)
 	if err != nil {

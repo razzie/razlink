@@ -75,7 +75,7 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 			return
 		}
 
-		db.InsertLog(e.ID, r.Header.Get("X-REAL-IP"), r.UserAgent())
+		db.InsertLog(e.ID, r)
 
 		http.SetCookie(w, &http.Cookie{Name: e.ID, Value: e.PasswordHash})
 		http.Redirect(w, r, fmt.Sprintf("/add/%s/%s", e.ID, decoy), http.StatusSeeOther)

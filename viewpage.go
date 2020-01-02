@@ -24,7 +24,7 @@ func installViewPage(db *DB, mux *http.ServeMux) {
 			return
 		}
 
-		defer db.InsertLog(id, r.Header.Get("X-REAL-IP"), r.UserAgent())
+		defer db.InsertLog(id, r)
 
 		switch e.Method {
 		case Proxy:

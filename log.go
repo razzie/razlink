@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -19,11 +20,13 @@ type Log struct {
 	City        string
 	OS          string
 	Browser     string
+	Path        string `json:"-"`
 }
 
 // NewLog ...
-func NewLog(ip, userAgent string) Log {
-	l := Log{Time: time.Now(), IP: ip}
+func NewLog(r *http.Request) Log {
+	ip := r.Header.Get("X-REAL-IP")
+	l := Log{Time: time.Now(), IP: ip, Path: r.URL.Path}
 
 	l.Addresses, _ = net.LookupAddr(ip)
 
@@ -34,7 +37,7 @@ func NewLog(ip, userAgent string) Log {
 		l.City = loc.City
 	}
 
-	ua := user_agent.New(userAgent)
+	ua := user_agent.New(r.UserAgent())
 	browser, ver := ua.Browser()
 	l.OS = ua.OS()
 	l.Browser = fmt.Sprintf("%s %s", browser, ver)
@@ -43,7 +46,7 @@ func NewLog(ip, userAgent string) Log {
 }
 
 func (l Log) String() string {
-	return fmt.Sprintf("%s - %s - %s - %s/%s/%s - %s - %s",
+	return fmt.Sprintf("%s - %s - %s - %s/%s/%s - %s - %s - path: %s",
 		l.Time.Format(time.RFC3339),
 		l.IP,
 		strings.Join(l.Addresses, ", "),
@@ -51,5 +54,6 @@ func (l Log) String() string {
 		l.RegionName,
 		l.City,
 		l.OS,
-		l.Browser)
+		l.Browser,
+		l.Path)
 }
