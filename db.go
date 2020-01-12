@@ -43,21 +43,35 @@ func (db *DB) Close() error {
 // InsertEntry inserts a new entry to the database
 func (db *DB) InsertEntry(url, password string, method ServeMethod) (*Entry, error) {
 	e := NewEntry(url, password, method)
+	return e, db.insertEntry(e)
+}
 
+// InsertPermanentEntry inserts a new entry to the database
+func (db *DB) InsertPermanentEntry(ID, url, password string, method ServeMethod) (*Entry, error) {
+	e := NewPermanentEntry(ID, url, password, method)
+	return e, db.insertEntry(e)
+}
+
+func (db *DB) insertEntry(e *Entry) error {
 	data, err := json.Marshal(e)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	success, err := db.client.SetNX(e.ID, string(data), db.ExpirationTime).Result()
+	expiration := db.ExpirationTime
+	if e.Permanent {
+		expiration = 0
+	}
+
+	success, err := db.client.SetNX(e.ID, string(data), expiration).Result()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !success {
-		return nil, fmt.Errorf("duplicate ID: %s", e.ID)
+		return fmt.Errorf("duplicate ID: %s", e.ID)
 	}
 
-	return e, nil
+	return nil
 }
 
 // GetEntry returns the entry with the given ID
@@ -73,7 +87,10 @@ func (db *DB) GetEntry(id string) (*Entry, error) {
 		return nil, err
 	}
 
-	db.client.Expire(id, db.ExpirationTime) // reset expiration
+	// reset expiration
+	if !e.Permanent {
+		db.client.Expire(id, db.ExpirationTime)
+	}
 	db.client.Expire(id+"-log", db.ExpirationTime)
 
 	return &e, nil

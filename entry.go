@@ -7,6 +7,7 @@ type Entry struct {
 	Method       ServeMethod
 	Salt         string
 	PasswordHash string
+	Permanent    bool
 }
 
 // NewEntry ...
@@ -21,6 +22,14 @@ func NewEntry(url, password string, method ServeMethod) *Entry {
 		Salt:         salt,
 		PasswordHash: Hash(salt + password),
 	}
+}
+
+// NewPermanentEntry ...
+func NewPermanentEntry(ID, url, password string, method ServeMethod) *Entry {
+	e := NewEntry(url, password, method)
+	e.ID = ID
+	e.Permanent = true
+	return e
 }
 
 // MatchPassword ...
