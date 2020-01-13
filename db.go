@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -94,6 +95,30 @@ func (db *DB) GetEntry(id string) (*Entry, error) {
 	db.client.Expire(id+"-log", db.ExpirationTime)
 
 	return &e, nil
+}
+
+// GetEntries returns the list of entries with IDs matching the given pattern
+func (db *DB) GetEntries(pattern string) ([]*Entry, error) {
+	keys, err := db.client.Keys(pattern).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []*Entry
+	for _, key := range keys {
+		if strings.HasSuffix(key, "-log") {
+			continue
+		}
+
+		e, err := db.GetEntry(key)
+		if err != nil {
+			continue
+		}
+
+		entries = append(entries, e)
+	}
+
+	return entries, nil
 }
 
 // DeleteEntry deleted the entry with the given ID

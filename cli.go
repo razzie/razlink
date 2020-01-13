@@ -32,22 +32,13 @@ func newCLI(db *DB) *CLI {
 		}
 
 		pattern := args[0]
-		keys, err := db.client.Keys(pattern).Result()
+		entries, err := db.GetEntries(pattern)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		for _, key := range keys {
-			if strings.HasSuffix(key, "-log") {
-				continue
-			}
-
-			e, err := db.GetEntry(key)
-			if err != nil {
-				continue
-			}
-
+		for _, e := range entries {
 			fmt.Println(e.ID, "-", e.URL)
 		}
 	}
