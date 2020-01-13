@@ -1,4 +1,4 @@
-package main
+package razlink
 
 // Entry ...
 type Entry struct {

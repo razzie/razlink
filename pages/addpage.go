@@ -1,10 +1,12 @@
-package main
+package pages
 
 import (
 	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
+
+	"github.com/razzie/razlink"
 )
 
 var addPage = `
@@ -42,7 +44,7 @@ var addResultPage = `
 </div>
 `
 
-func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
+func installAddPage(db *razlink.DB, mux *http.ServeMux, hostname string) {
 	addResultPageT, err := template.New("").Parse(addResultPage)
 	if err != nil {
 		panic(err)
@@ -58,7 +60,7 @@ func installAddPage(db *DB, mux *http.ServeMux, hostname string) {
 		r.ParseForm()
 		url := r.FormValue("url")
 		pw := r.FormValue("password")
-		method, err := GetServeMethodForURL(r.Context(), url)
+		method, err := razlink.GetServeMethodForURL(r.Context(), url)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

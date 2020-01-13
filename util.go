@@ -1,4 +1,4 @@
-package main
+package razlink
 
 import (
 	"crypto/sha1"
@@ -47,12 +47,4 @@ func HasContentType(header http.Header, mimetype string) bool {
 		}
 	}
 	return false
-}
-
-func getIDFromRequest(r *http.Request) (string, bool) {
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 3 {
-		return "", false
-	}
-	return parts[2], true
 }

@@ -1,4 +1,4 @@
-package main
+package razlink
 
 import (
 	"encoding/json"

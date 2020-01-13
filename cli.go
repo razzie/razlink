@@ -1,4 +1,4 @@
-package main
+package razlink
 
 import (
 	"bufio"
@@ -14,7 +14,8 @@ type CLI struct {
 	cmds map[string]func(args []string)
 }
 
-func newCLI(db *DB) *CLI {
+// NewCLI ...
+func NewCLI(db *DB) *CLI {
 	cli := &CLI{
 		cmds: make(map[string]func(args []string)),
 	}

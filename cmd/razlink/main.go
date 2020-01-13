@@ -4,6 +4,9 @@ import (
 	"flag"
 	"net/http"
 	"strconv"
+
+	"github.com/razzie/razlink"
+	"github.com/razzie/razlink/pages"
 )
 
 func main() {
@@ -15,7 +18,7 @@ func main() {
 	cliMode := flag.Bool("cli", false, "Enable CLI mode instead of http server")
 	flag.Parse()
 
-	db, err := NewDB(*redisAddr, *redisPw, *redisDb)
+	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
 	if err != nil {
 		panic(err)
 	}
@@ -23,11 +26,11 @@ func main() {
 	defer db.Close()
 
 	if *cliMode {
-		cli := newCLI(db)
+		cli := razlink.NewCLI(db)
 		cli.Run()
 	} else {
 		addr := "localhost:" + strconv.Itoa(*port)
-		srv := newServer(db, *hostname)
+		srv := pages.NewServer(db, *hostname)
 		http.ListenAndServe(addr, srv)
 	}
 }

@@ -1,10 +1,12 @@
-package main
+package pages
 
 import (
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/razzie/razlink"
 )
 
 var logsPasswordPage = `
@@ -69,7 +71,7 @@ var logsPage = `
 
 const logsPerPage = 20
 
-func installLogPage(db *DB, mux *http.ServeMux) {
+func installLogPage(db *razlink.DB, mux *http.ServeMux) {
 	logsPageT, err := template.New("").Parse(logsPage)
 	if err != nil {
 		panic(err)
@@ -117,7 +119,7 @@ func installLogPage(db *DB, mux *http.ServeMux) {
 		}
 
 		var view struct {
-			Logs  []Log
+			Logs  []razlink.Log
 			Pages []int
 		}
 

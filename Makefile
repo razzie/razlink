@@ -1,4 +1,4 @@
 build:
-	go build -mod=vendor
+	go build -mod=vendor ./cmd/razlink
 
 .PHONY: build
