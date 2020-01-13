@@ -16,10 +16,11 @@ func newServer(db *DB, hostname string) *server {
 	installAddPage(db, mux, hostname)
 	installViewPage(db, mux)
 	installLogPage(db, mux)
+	installWelcomePage(mux)
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	/*mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/add", http.StatusSeeOther)
-	})
+	})*/
 
 	return srv
 }
