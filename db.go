@@ -42,18 +42,36 @@ func (db *DB) Close() error {
 }
 
 // InsertEntry inserts a new entry to the database
-func (db *DB) InsertEntry(url, password string, method ServeMethod) (*Entry, error) {
-	e := NewEntry(url, password, method)
-	return e, db.insertEntry(e)
+// If 'id' is null, the function will generate and return a unique one
+func (db *DB) InsertEntry(id *string, e *Entry) (string, error) {
+	if id == nil {
+		tmpID := NewID()
+		id = &tmpID
+	}
+
+	data, err := json.Marshal(e)
+	if err != nil {
+		return *id, err
+	}
+
+	expiration := db.ExpirationTime
+	if e.Permanent {
+		expiration = 0
+	}
+
+	success, err := db.client.SetNX(*id, string(data), expiration).Result()
+	if err != nil {
+		return *id, err
+	}
+	if !success {
+		return *id, fmt.Errorf("duplicate ID: %s", *id)
+	}
+
+	return *id, nil
 }
 
-// InsertPermanentEntry inserts a new entry to the database
-func (db *DB) InsertPermanentEntry(ID, url, password string, method ServeMethod) (*Entry, error) {
-	e := NewPermanentEntry(ID, url, password, method)
-	return e, db.insertEntry(e)
-}
-
-func (db *DB) insertEntry(e *Entry) error {
+// SetEntry inserts or rewrites the entry with the given ID
+func (db *DB) SetEntry(id string, e *Entry) error {
 	data, err := json.Marshal(e)
 	if err != nil {
 		return err
@@ -64,15 +82,7 @@ func (db *DB) insertEntry(e *Entry) error {
 		expiration = 0
 	}
 
-	success, err := db.client.SetNX(e.ID, string(data), expiration).Result()
-	if err != nil {
-		return err
-	}
-	if !success {
-		return fmt.Errorf("duplicate ID: %s", e.ID)
-	}
-
-	return nil
+	return db.client.Set(id, string(data), expiration).Err()
 }
 
 // GetEntry returns the entry with the given ID
@@ -98,13 +108,13 @@ func (db *DB) GetEntry(id string) (*Entry, error) {
 }
 
 // GetEntries returns the list of entries with IDs matching the given pattern
-func (db *DB) GetEntries(pattern string) ([]*Entry, error) {
+func (db *DB) GetEntries(pattern string) (map[string]*Entry, error) {
 	keys, err := db.client.Keys(pattern).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	var entries []*Entry
+	entries := make(map[string]*Entry)
 	for _, key := range keys {
 		if strings.HasSuffix(key, "-log") {
 			continue
@@ -115,7 +125,7 @@ func (db *DB) GetEntries(pattern string) ([]*Entry, error) {
 			continue
 		}
 
-		entries = append(entries, e)
+		entries[key] = e
 	}
 
 	return entries, nil

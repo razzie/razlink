@@ -71,16 +71,17 @@ func installAddPage(db *razlink.DB, mux *http.ServeMux, hostname string) {
 			decoy = ""
 		}
 
-		e, err := db.InsertEntry(url, pw, method)
+		e := razlink.NewEntry(url, pw, method)
+		id, err := db.InsertEntry(nil, e)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		db.InsertLog(e.ID, r)
+		db.InsertLog(id, r)
 
-		http.SetCookie(w, &http.Cookie{Name: e.ID, Value: e.PasswordHash})
-		http.Redirect(w, r, fmt.Sprintf("/add/%s/%s", e.ID, decoy), http.StatusSeeOther)
+		http.SetCookie(w, &http.Cookie{Name: id, Value: e.PasswordHash})
+		http.Redirect(w, r, fmt.Sprintf("/add/%s/%s", id, decoy), http.StatusSeeOther)
 	})
 
 	mux.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {

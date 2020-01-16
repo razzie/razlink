@@ -96,9 +96,9 @@ func installLogPage(db *razlink.DB, mux *http.ServeMux) {
 				return
 			}
 
-			http.SetCookie(w, &http.Cookie{Name: e.ID, Value: e.PasswordHash})
+			http.SetCookie(w, &http.Cookie{Name: id, Value: e.PasswordHash})
 		} else {
-			cookie, _ := r.Cookie(e.ID)
+			cookie, _ := r.Cookie(id)
 			if cookie == nil || cookie.Value != e.PasswordHash {
 				fmt.Fprint(w, logsPasswordPage)
 				return
@@ -106,15 +106,15 @@ func installLogPage(db *razlink.DB, mux *http.ServeMux) {
 		}
 
 		if len(r.URL.Path) < 6+len(id)+1 { // /logs/ID/
-			http.Redirect(w, r, "/logs/"+e.ID+"/1", http.StatusSeeOther)
+			http.Redirect(w, r, "/logs/"+id+"/1", http.StatusSeeOther)
 			return
 		}
 
 		actionOrPage := r.URL.Path[6+len(id)+1:]
 
 		if actionOrPage == "clear" {
-			db.DeleteLogs(e.ID)
-			http.Redirect(w, r, "/logs/"+e.ID+"/1", http.StatusSeeOther)
+			db.DeleteLogs(id)
+			http.Redirect(w, r, "/logs/"+id+"/1", http.StatusSeeOther)
 			return
 		}
 
@@ -139,7 +139,7 @@ func installLogPage(db *razlink.DB, mux *http.ServeMux) {
 		if page < 1 {
 			page = 1
 		} else if page > pageCount {
-			http.Redirect(w, r, fmt.Sprintf("/logs/%s/%d", e.ID, pageCount), http.StatusSeeOther)
+			http.Redirect(w, r, fmt.Sprintf("/logs/%s/%d", id, pageCount), http.StatusSeeOther)
 			return
 		}
 		view.Logs, _ = db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)

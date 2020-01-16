@@ -41,8 +41,8 @@ func NewCLI(db *razlink.DB) *CLI {
 			return
 		}
 
-		for _, e := range entries {
-			fmt.Println(e.ID, "-", e.URL)
+		for id, e := range entries {
+			fmt.Println(id, "-", e.URL)
 		}
 	}
 
@@ -60,22 +60,23 @@ func NewCLI(db *razlink.DB) *CLI {
 			return
 		}
 
-		e, err := db.InsertEntry(url, pw, method)
+		e := razlink.NewEntry(url, pw, method)
+		id, err := db.InsertEntry(nil, e)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		fmt.Println("added:", e.ID)
+		fmt.Println("added:", id)
 	}
 
 	cli.cmds["add-permanent"] = func(args []string) {
 		if len(args) != 3 {
-			fmt.Println("usage: add-permament <ID> <URL> <password>")
+			fmt.Println("usage: add-permament <id> <URL> <password>")
 			return
 		}
 
-		ID := args[0]
+		id := args[0]
 		url := args[1]
 		pw := args[2]
 		method, err := razlink.GetServeMethodForURL(context.Background(), url)
@@ -84,41 +85,43 @@ func NewCLI(db *razlink.DB) *CLI {
 			return
 		}
 
-		e, err := db.InsertPermanentEntry(ID, url, pw, method)
+		e := razlink.NewEntry(url, pw, method)
+		e.Permanent = true
+		_, err = db.InsertEntry(&id, e)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		fmt.Println("added:", e.ID)
+		fmt.Println("added:", id)
 	}
 
 	cli.cmds["delete"] = func(args []string) {
 		if len(args) != 1 {
-			fmt.Println("usage: delete <ID>")
+			fmt.Println("usage: delete <id>")
 			return
 		}
 
-		ID := args[0]
-		err := db.DeleteEntry(ID)
+		id := args[0]
+		err := db.DeleteEntry(id)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		fmt.Println("deleted:", ID)
+		fmt.Println("deleted:", id)
 	}
 
 	cli.cmds["logs"] = func(args []string) {
 		if len(args) != 3 {
-			fmt.Println("usage: logs <ID> <first> <last>")
+			fmt.Println("usage: logs <id> <first> <last>")
 			return
 		}
 
-		ID := args[0]
+		id := args[0]
 		first, _ := strconv.Atoi(args[1])
 		last, _ := strconv.Atoi(args[2])
-		logs, err := db.GetLogs(ID, first, last)
+		logs, err := db.GetLogs(id, first, last)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
@@ -131,18 +134,18 @@ func NewCLI(db *razlink.DB) *CLI {
 
 	cli.cmds["clear-logs"] = func(args []string) {
 		if len(args) != 1 {
-			fmt.Println("usage: clear-logs <ID>")
+			fmt.Println("usage: clear-logs <id>")
 			return
 		}
 
-		ID := args[0]
-		err := db.DeleteLogs(ID)
+		id := args[0]
+		err := db.DeleteLogs(id)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		fmt.Println("logs cleared:", ID)
+		fmt.Println("logs cleared:", id)
 	}
 
 	cli.cmds["exit"] = func(args []string) {
