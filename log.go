@@ -14,7 +14,7 @@ import (
 type Log struct {
 	Time        time.Time
 	IP          string
-	Hostnames   []string
+	Hostnames   []string `json:"Addresses"`
 	CountryName string
 	RegionName  string
 	City        string
