@@ -26,8 +26,7 @@ func main() {
 	defer db.Close()
 
 	if *cliMode {
-		cli := razlink.NewCLI(db)
-		cli.Run()
+		NewCLI(db).Run()
 	} else {
 		addr := "localhost:" + strconv.Itoa(*port)
 		srv := pages.NewServer(db, *hostname)

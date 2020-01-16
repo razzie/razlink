@@ -1,4 +1,4 @@
-package razlink
+package main
 
 import (
 	"bufio"
@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/razzie/razlink"
 )
 
 // CLI ...
@@ -15,7 +17,7 @@ type CLI struct {
 }
 
 // NewCLI ...
-func NewCLI(db *DB) *CLI {
+func NewCLI(db *razlink.DB) *CLI {
 	cli := &CLI{
 		cmds: make(map[string]func(args []string)),
 	}
@@ -52,7 +54,7 @@ func NewCLI(db *DB) *CLI {
 
 		url := args[0]
 		pw := args[1]
-		method, err := GetServeMethodForURL(context.Background(), url)
+		method, err := razlink.GetServeMethodForURL(context.Background(), url)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
@@ -76,7 +78,7 @@ func NewCLI(db *DB) *CLI {
 		ID := args[0]
 		url := args[1]
 		pw := args[2]
-		method, err := GetServeMethodForURL(context.Background(), url)
+		method, err := razlink.GetServeMethodForURL(context.Background(), url)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
