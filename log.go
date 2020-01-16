@@ -20,13 +20,19 @@ type Log struct {
 	City        string
 	OS          string
 	Browser     string
+	Referer     string
 	Path        string `json:"-"`
 }
 
 // NewLog ...
 func NewLog(r *http.Request) Log {
 	ip := r.Header.Get("X-REAL-IP")
-	l := Log{Time: time.Now(), IP: ip, Path: r.URL.Path}
+	l := Log{
+		Time:    time.Now(),
+		IP:      ip,
+		Referer: r.Referer(),
+		Path:    r.URL.Path,
+	}
 
 	l.Addresses, _ = net.LookupAddr(ip)
 
