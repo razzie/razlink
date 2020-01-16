@@ -26,7 +26,7 @@ var logsPage = `
 <div style="display: flex; align-items: center; justify-content: center">
 	<div style="border: 1px solid black; padding: 1rem; display: inline-flex">
 		{{if .Logs}}
-		<table>
+		<table style="border-spacing: 10px; border-collapse: separate">
 			<tr>
 				<td><strong>Time</strong></td>
 				<td><strong>IP</strong></td>
