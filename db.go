@@ -115,17 +115,23 @@ func (db *DB) GetEntries(pattern string) (map[string]*Entry, error) {
 	}
 
 	entries := make(map[string]*Entry)
-	for _, key := range keys {
-		if strings.HasSuffix(key, "-log") {
+	for _, id := range keys {
+		if strings.HasSuffix(id, "-log") {
 			continue
 		}
 
-		e, err := db.GetEntry(key)
+		data, err := db.client.Get(id).Result()
 		if err != nil {
-			continue
+			return nil, err
 		}
 
-		entries[key] = e
+		var e Entry
+		err = json.Unmarshal([]byte(data), &e)
+		if err != nil {
+			return nil, err
+		}
+
+		entries[id] = &e
 	}
 
 	return entries, nil
