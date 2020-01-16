@@ -29,9 +29,11 @@ func NewCLI(db *razlink.DB) *CLI {
 	}
 
 	cli.cmds["links"] = func(args []string) {
-		if len(args) != 1 {
+		if len(args) > 1 {
 			fmt.Println("usage: links <pattern>")
 			return
+		} else if len(args) == 0 {
+			args = []string{"*"}
 		}
 
 		pattern := args[0]
@@ -72,7 +74,7 @@ func NewCLI(db *razlink.DB) *CLI {
 
 	cli.cmds["add-permanent"] = func(args []string) {
 		if len(args) != 3 {
-			fmt.Println("usage: add-permament <id> <URL> <password>")
+			fmt.Println("usage: add-permament <ID> <URL> <password>")
 			return
 		}
 
@@ -96,9 +98,33 @@ func NewCLI(db *razlink.DB) *CLI {
 		fmt.Println("added:", id)
 	}
 
+	cli.cmds["change-password"] = func(args []string) {
+		if len(args) != 2 {
+			fmt.Println("usage: change-password <ID> <new password>")
+			return
+		}
+
+		id := args[0]
+		pw := args[1]
+		e, err := db.GetEntry(id)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		e.SetPassword(pw)
+		err = db.SetEntry(id, e)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		fmt.Println("done")
+	}
+
 	cli.cmds["delete"] = func(args []string) {
 		if len(args) != 1 {
-			fmt.Println("usage: delete <id>")
+			fmt.Println("usage: delete <ID>")
 			return
 		}
 
@@ -114,7 +140,7 @@ func NewCLI(db *razlink.DB) *CLI {
 
 	cli.cmds["logs"] = func(args []string) {
 		if len(args) != 3 {
-			fmt.Println("usage: logs <id> <first> <last>")
+			fmt.Println("usage: logs <ID> <first> <last>")
 			return
 		}
 
@@ -134,7 +160,7 @@ func NewCLI(db *razlink.DB) *CLI {
 
 	cli.cmds["clear-logs"] = func(args []string) {
 		if len(args) != 1 {
-			fmt.Println("usage: clear-logs <id>")
+			fmt.Println("usage: clear-logs <ID>")
 			return
 		}
 

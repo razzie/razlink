@@ -25,3 +25,8 @@ func NewEntry(url, password string, method ServeMethod) *Entry {
 func (entry *Entry) MatchPassword(password string) bool {
 	return entry.PasswordHash == Hash(entry.Salt+password)
 }
+
+// SetPassword ...
+func (entry *Entry) SetPassword(password string) {
+	entry.PasswordHash = Hash(entry.Salt + password)
+}
