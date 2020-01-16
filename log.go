@@ -14,7 +14,7 @@ import (
 type Log struct {
 	Time        time.Time
 	IP          string
-	Addresses   []string
+	Hostnames   []string
 	CountryName string
 	RegionName  string
 	City        string
@@ -34,7 +34,7 @@ func NewLog(r *http.Request) Log {
 		Path:    r.URL.Path,
 	}
 
-	l.Addresses, _ = net.LookupAddr(ip)
+	l.Hostnames, _ = net.LookupAddr(ip)
 
 	loc, _ := GetLocation(ip)
 	if loc != nil {
@@ -55,7 +55,7 @@ func (l Log) String() string {
 	return fmt.Sprintf("%s - %s - %s - %s/%s/%s - %s - %s - path: %s",
 		l.Time.Format(time.RFC3339),
 		l.IP,
-		strings.Join(l.Addresses, ", "),
+		strings.Join(l.Hostnames, ", "),
 		l.CountryName,
 		l.RegionName,
 		l.City,

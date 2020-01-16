@@ -30,7 +30,7 @@ var logsPage = `
 			<tr>
 				<td><strong>Time</strong></td>
 				<td><strong>IP</strong></td>
-				<td><strong>Addresses</strong></td>
+				<td><strong>Hostnames</strong></td>
 				<td><strong>Country</strong></td>
 				<td><strong>Region</strong></td>
 				<td><strong>City</strong></td>
@@ -43,7 +43,7 @@ var logsPage = `
 				<td>{{.Time}}</td>
 				<td>{{.IP}}</td>
 				<td>
-					{{range .Addresses}}
+					{{range .Hostnames}}
 					{{.}}<br />
 					{{end}}
 				</td>
