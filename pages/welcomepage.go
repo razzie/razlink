@@ -14,11 +14,12 @@ var welcomePage = `
 			This is a lightweight link proxy/redirect service with logging.<br />
 			<br />
 			You can <a href="add">add a new link</a> with a custom password to view the visits.<br />
-			There are 3 automatic operation modes based on the URL:<br />
+			There are 4 automatic operation modes based on the URL:<br />
 			<ul>
 				<li>Proxy - for files (e.g. an image)</li>
 				<li>Embed - for websites that allow embedding</li>
 				<li>Redirect - for websites that forbid embedding</li>
+				<li>Track - write <strong>.</strong> to URL field to enable transparent pixel track mode</li>
 			</ul><br />
 			Check out the source code at <a href="https://github.com/razzie/razlink" target="_blank">github.com/razzie/razlink</a>.<br />
 		</div>

@@ -14,10 +14,15 @@ const (
 	Proxy ServeMethod = iota
 	Embed
 	Redirect
+	Track
 )
 
 // GetServeMethodForURL tries to determine the best possible serve method for an url
 func GetServeMethodForURL(ctx context.Context, url string, timeout time.Duration) (ServeMethod, error) {
+	if url == "." {
+		return Track, nil
+	}
+
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 

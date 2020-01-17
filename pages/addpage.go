@@ -32,10 +32,15 @@ var addResultPage = `
 		<div>
 			<strong>Bookmark this page!</strong><br />
 			<br />
+			{{if .Track}}
+			Embed this in your website:<br />
+			&lt;img src="<a href="http://{{.Hostname}}/x/{{.ID}}">http://{{.Hostname}}/x/{{.ID}}</a>" width="1" height="1" /&gt;<br />
+			{{else}}
 			Access the target URL:<br />
 			<a href="http://{{.Hostname}}/x/{{.ID}}">{{.Hostname}}/x/{{.ID}}</a><br />
 			{{if .Decoy}}
-			<a href="http://{{.Hostname}}/x/{{.ID}}{{.Decoy}}">{{.Hostname}}/x/{{.ID}}{{.Decoy}}</a><br />
+			<a href="http://{{.Hostname}}/x/{{.ID}}/{{.Decoy}}">{{.Hostname}}/x/{{.ID}}/{{.Decoy}}</a><br />
+			{{end}}
 			{{end}}
 			<br />
 			Access logs:<br />
@@ -67,11 +72,6 @@ func installAddPage(db *razlink.DB, mux *http.ServeMux, hostname string) {
 			return
 		}
 
-		decoy := filepath.Base(url)
-		if len(decoy) < 2 {
-			decoy = ""
-		}
-
 		e := razlink.NewEntry(url, pw, method)
 		id, err := db.InsertEntry(nil, e)
 		if err != nil {
@@ -82,21 +82,36 @@ func installAddPage(db *razlink.DB, mux *http.ServeMux, hostname string) {
 		db.InsertLog(id, r)
 
 		http.SetCookie(w, &http.Cookie{Name: id, Value: e.PasswordHash})
-		http.Redirect(w, r, fmt.Sprintf("/add/%s/%s", id, decoy), http.StatusSeeOther)
+		http.Redirect(w, r, "/add/"+id, http.StatusSeeOther)
 	})
 
 	mux.HandleFunc("/add/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		id, _ := getIDFromRequest(r)
+
+		e, _ := db.GetEntry(id)
+		if e == nil {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+
+		decoy := filepath.Base(e.URL)
+		if len(decoy) < 2 {
+			decoy = ""
+		}
+
 		view := struct {
 			Hostname string
 			ID       string
 			Decoy    string
+			Track    bool
 		}{
 			Hostname: hostname,
 			ID:       id,
-			Decoy:    r.URL.Path[5+len(id):],
+			Decoy:    decoy,
+			Track:    e.Method == razlink.Track,
 		}
+
 		addResultPageT.Execute(w, view)
 	})
 }
