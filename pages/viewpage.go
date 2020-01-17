@@ -38,7 +38,9 @@ func installViewPage(db *razlink.DB, mux *http.ServeMux) {
 			}
 			defer resp.Body.Close()
 
-			if resp.StatusCode != http.StatusOK {
+			// Success is indicated with 2xx status codes:
+			statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
+			if !statusOK {
 				http.Error(w, resp.Status, resp.StatusCode)
 				return
 			}

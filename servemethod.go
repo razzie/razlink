@@ -2,7 +2,6 @@ package razlink
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -30,9 +29,9 @@ func GetServeMethodForURL(ctx context.Context, url string, timeout time.Duration
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	/*if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("Cannot determine serving method (%s)", resp.Status)
-	}
+	}*/
 
 	if HasContentType(resp.Header, "text/html") {
 		if len(resp.Header.Get("X-Frame-Options")) > 0 {
