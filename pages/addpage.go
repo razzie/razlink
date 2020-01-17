@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/razzie/razlink"
 )
@@ -60,7 +61,7 @@ func installAddPage(db *razlink.DB, mux *http.ServeMux, hostname string) {
 		r.ParseForm()
 		url := r.FormValue("url")
 		pw := r.FormValue("password")
-		method, err := razlink.GetServeMethodForURL(r.Context(), url)
+		method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

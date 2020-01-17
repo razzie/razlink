@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/razzie/razlink"
 )
@@ -56,7 +57,7 @@ func NewCLI(db *razlink.DB) *CLI {
 
 		url := args[0]
 		pw := args[1]
-		method, err := razlink.GetServeMethodForURL(context.Background(), url)
+		method, err := razlink.GetServeMethodForURL(context.Background(), url, time.Minute)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
@@ -81,7 +82,7 @@ func NewCLI(db *razlink.DB) *CLI {
 		id := args[0]
 		url := args[1]
 		pw := args[2]
-		method, err := razlink.GetServeMethodForURL(context.Background(), url)
+		method, err := razlink.GetServeMethodForURL(context.Background(), url, time.Minute)
 		if err != nil {
 			fmt.Println("error:", err)
 			return

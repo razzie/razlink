@@ -18,8 +18,8 @@ const (
 )
 
 // GetServeMethodForURL tries to determine the best possible serve method for an url
-func GetServeMethodForURL(ctx context.Context, url string) (ServeMethod, error) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second*3)
+func GetServeMethodForURL(ctx context.Context, url string, timeout time.Duration) (ServeMethod, error) {
+	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	req, _ := http.NewRequest("GET", url, nil)
