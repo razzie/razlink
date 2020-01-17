@@ -13,6 +13,7 @@ import (
 // DB ...
 type DB struct {
 	ExpirationTime time.Duration
+	MaxLogs        int
 	client         *redis.Client
 }
 
@@ -32,6 +33,7 @@ func NewDB(addr, password string, db int) (*DB, error) {
 
 	return &DB{
 		ExpirationTime: 30 * 24 * time.Hour, // ~1 month
+		MaxLogs:        1000,
 		client:         client,
 	}, nil
 }
@@ -159,6 +161,8 @@ func (db *DB) InsertLog(entryID string, r *http.Request) error {
 
 	if len == 1 {
 		db.client.Expire(entryID+"-log", db.ExpirationTime)
+	} else {
+		db.client.LTrim(entryID+"-log", 0, int64(db.MaxLogs-1))
 	}
 
 	return nil
