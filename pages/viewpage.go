@@ -38,6 +38,20 @@ func installViewPage(db *razlink.DB, mux *http.ServeMux) {
 			}
 			defer resp.Body.Close()
 
+			// in case the served content is not a file anymore
+			if razlink.HasContentType(resp.Header, "text/html") {
+				if len(resp.Header.Get("X-Frame-Options")) > 0 {
+					e.Method = razlink.Redirect
+					http.Redirect(w, r, e.URL, http.StatusSeeOther)
+				} else {
+					e.Method = razlink.Embed
+					embedPageT.Execute(w, e.URL)
+				}
+
+				db.SetEntry(id, e)
+				return
+			}
+
 			// Success is indicated with 2xx status codes:
 			statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
 			if !statusOK {
