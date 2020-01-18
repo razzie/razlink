@@ -25,48 +25,46 @@ var logsPasswordPage = `
 var logsPage = `
 <div style="display: flex; align-items: center; justify-content: center">
 	<div style="border: 1px solid black; padding: 1rem; display: inline-flex">
-		{{if .Logs}}
-		<table style="border-spacing: 10px; border-collapse: separate">
-			<tr>
-				<td><strong>Time</strong></td>
-				<td><strong>IP</strong></td>
-				<td><strong>Hostnames</strong></td>
-				<td><strong>Country</strong></td>
-				<td><strong>Region</strong></td>
-				<td><strong>City</strong></td>
-				<td><strong>OS</strong></td>
-				<td><strong>Browser</strong></td>
-				<td><strong>Referer</strong></td>
-			</tr>
-			{{range .Logs}}
-			<tr>
-				<td>{{.Time}}</td>
-				<td>{{.IP}}</td>
-				<td>
-					{{range .Hostnames}}
-					{{.}}<br />
-					{{end}}
-				</td>
-				<td>{{.CountryName}}</td>
-				<td>{{.RegionName}}</td>
-				<td>{{.City}}</td>
-				<td>{{.OS}}</td>
-				<td>{{.Browser}}</td>
-				<td>{{.Referer}}</td>
-			</tr>
+		<div>
+			{{if .Logs}}
+			<table style="border-spacing: 10px; border-collapse: separate">
+				<tr>
+					<td><strong>Time</strong></td>
+					<td><strong>IP</strong></td>
+					<td><strong>Hostnames</strong></td>
+					<td><strong>Country</strong></td>
+					<td><strong>Region</strong></td>
+					<td><strong>City</strong></td>
+					<td><strong>OS</strong></td>
+					<td><strong>Browser</strong></td>
+					<td><strong>Referer</strong></td>
+				</tr>
+				{{range .Logs}}
+				<tr>
+					<td>{{.Time}}</td>
+					<td>{{.IP}}</td>
+					<td>
+						{{range .Hostnames}}
+						{{.}}<br />
+						{{end}}
+					</td>
+					<td>{{.CountryName}}</td>
+					<td>{{.RegionName}}</td>
+					<td>{{.City}}</td>
+					<td>{{.OS}}</td>
+					<td>{{.Browser}}</td>
+					<td>{{.Referer}}</td>
+				</tr>
+				{{end}}
+			</table>
+			{{range .Pages}}
+			<a href="{{.}}">{{.}}</a> |
 			{{end}}
-			<tr>
-				<td colspan="9">
-					{{range .Pages}}
-					<a href="{{.}}">{{.}}</a> |
-					{{end}}
-					<a href="clear">clear</a>
-				</td>
-			</tr>
-		</table>
-		{{else}}
-		<strong>No logs yet!</strong>
-		{{end}}
+			<a href="clear">clear</a>
+			{{else}}
+			<strong>No logs yet!</strong>
+			{{end}}
+		</div>
 	</div>
 </div>
 `
