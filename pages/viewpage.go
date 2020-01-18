@@ -1,11 +1,9 @@
 package pages
 
 import (
-	"encoding/base64"
 	"html/template"
 	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/razzie/razlink"
 )
@@ -13,8 +11,6 @@ import (
 var embedPage = `
 <iframe src="{{.}}" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>
 `
-
-var trackPixelBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
 func installViewPage(db *razlink.DB, mux *http.ServeMux) {
 	embedPageT, err := template.New("").Parse(embedPage)
@@ -76,10 +72,7 @@ func installViewPage(db *razlink.DB, mux *http.ServeMux) {
 			http.Redirect(w, r, e.URL, http.StatusSeeOther)
 
 		case razlink.Track:
-			bytes, _ := base64.StdEncoding.DecodeString(trackPixelBase64)
-			w.Header().Set("Content-Type", "image/png")
-			w.Header().Set("Content-Length", strconv.Itoa(len(bytes)))
-			_, _ = w.Write(bytes)
+			razlink.WritePixel(w)
 
 		default:
 			http.Error(w, "Invalid serve method", http.StatusInternalServerError)

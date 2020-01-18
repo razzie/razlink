@@ -2,6 +2,7 @@ package razlink
 
 import (
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/hex"
 	"mime"
 	"net/http"
@@ -47,4 +48,13 @@ func HasContentType(header http.Header, mimetype string) bool {
 		}
 	}
 	return false
+}
+
+// WritePixel writes a transparent pixel to a http.ResponseWriter
+func WritePixel(w http.ResponseWriter) {
+	pixel := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+	bytes, _ := base64.StdEncoding.DecodeString(pixel)
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(bytes)))
+	_, _ = w.Write(bytes)
 }
