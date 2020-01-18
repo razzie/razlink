@@ -3,6 +3,7 @@ package razlink
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -25,9 +26,13 @@ func (loc *Location) String() string {
 	return fmt.Sprintf("%s/%s/%s", loc.CountryName, loc.RegionName, loc.City)
 }
 
-// GetLocation returns the geolocation of a hostname or IP
-func GetLocation(hostname string) (*Location, error) {
-	url := "https://freegeoip.app/json/" + hostname
+// GetLocation returns the geolocation of an IP address
+func GetLocation(ip string) (*Location, error) {
+	if IsPrivateIP(net.ParseIP(ip)) {
+		ip = ""
+	}
+
+	url := "https://freegeoip.app/json/" + ip
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("content-type", "application/json")
