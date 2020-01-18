@@ -21,7 +21,6 @@ type Log struct {
 	OS          string
 	Browser     string
 	Referer     string
-	Path        string `json:"-"`
 }
 
 // NewLog ...
@@ -35,7 +34,6 @@ func NewLog(r *http.Request) Log {
 		Time:    time.Now(),
 		IP:      ip,
 		Referer: r.Referer(),
-		Path:    r.URL.Path,
 	}
 
 	l.Hostnames, _ = net.LookupAddr(ip)
@@ -56,7 +54,7 @@ func NewLog(r *http.Request) Log {
 }
 
 func (l Log) String() string {
-	return fmt.Sprintf("%s - %s - %s - %s/%s/%s - %s - %s - path: %s",
+	return fmt.Sprintf("%s - %s - %s - %s/%s/%s - %s - %s",
 		l.Time.Format(time.RFC3339),
 		l.IP,
 		strings.Join(l.Hostnames, ", "),
@@ -64,6 +62,5 @@ func (l Log) String() string {
 		l.RegionName,
 		l.City,
 		l.OS,
-		l.Browser,
-		l.Path)
+		l.Browser)
 }

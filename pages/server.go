@@ -32,7 +32,7 @@ func NewServer(db *razlink.DB, hostname string) *Server {
 
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	srv.mux.ServeHTTP(w, r)
-	fmt.Println(razlink.NewLog(r))
+	fmt.Println(razlink.NewLog(r), "- path:", r.URL.Path)
 }
 
 func getIDFromRequest(r *http.Request) (string, bool) {
