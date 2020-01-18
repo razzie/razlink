@@ -29,22 +29,23 @@ func GetServeMethodForURL(ctx context.Context, url string, timeout time.Duration
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := http.DefaultClient.Do(req.WithContext(timeoutCtx))
 	if err != nil {
-		return 0, err
+		return Redirect, err
 	}
 
 	defer resp.Body.Close()
 
-	/*if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("Cannot determine serving method (%s)", resp.Status)
-	}*/
+	return GetServeMethodFromHeader(resp.Header), nil
+}
 
-	if HasContentType(resp.Header, "text/html") {
-		if len(resp.Header.Get("X-Frame-Options")) > 0 {
-			return Redirect, nil
+// GetServeMethodFromHeader tries to determine the best possible serve method from a http response header
+func GetServeMethodFromHeader(header http.Header) ServeMethod {
+	if HasContentType(header, "text/html") {
+		if len(header.Get("X-Frame-Options")) > 0 {
+			return Redirect
 		}
 
-		return Embed, nil
+		return Embed
 	}
 
-	return Proxy, nil
+	return Proxy
 }
