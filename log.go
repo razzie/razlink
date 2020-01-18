@@ -27,6 +27,10 @@ type Log struct {
 // NewLog ...
 func NewLog(r *http.Request) Log {
 	ip := r.Header.Get("X-REAL-IP")
+	if len(ip) == 0 {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+
 	l := Log{
 		Time:    time.Now(),
 		IP:      ip,
