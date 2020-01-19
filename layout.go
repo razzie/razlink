@@ -11,6 +11,7 @@ var layout = `
 <html>
 	<head>
 		<title>{{.Title}}</title>
+		<base href="{{.Base}}" target="_blank">
 		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 		<style>
 		div.outer {
@@ -72,9 +73,11 @@ func (layout *Layout) CreatePageRenderer(title, content string, requestToData Pa
 
 		view := struct {
 			Title string
+			Base  string
 			Data  interface{}
 		}{
 			Title: title,
+			Base:  GetBase(r),
 			Data:  data,
 		}
 

@@ -103,3 +103,12 @@ func WriteFavicon(w http.ResponseWriter) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(favicon)))
 	_, _ = w.Write(favicon)
 }
+
+// GetBase returns the base target for relative URLs
+func GetBase(r *http.Request) string {
+	slashes := strings.Count(r.URL.Path, "/")
+	if slashes > 1 {
+		return strings.Repeat("../", slashes-1)
+	}
+	return "/"
+}
