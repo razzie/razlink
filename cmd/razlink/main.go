@@ -29,7 +29,10 @@ func main() {
 		NewCLI(db).Run()
 	} else {
 		addr := "localhost:" + strconv.Itoa(*port)
-		srv := pages.NewServer(db, *hostname)
+		srv := razlink.NewServer()
+		srv.AddPages(pages.GetAddPages(db, *hostname)...)
+		srv.AddPages(pages.GetLogPages(db, 20)...)
+		srv.AddPages(pages.GetViewPage(db), pages.GetWelcomePage())
 		http.ListenAndServe(addr, srv)
 	}
 }
