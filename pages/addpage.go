@@ -42,9 +42,9 @@ Access logs:<br />
 {{end}}
 `
 
-func handleAddPage(db *razlink.DB, w http.ResponseWriter, r *http.Request) interface{} {
+func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	if r.Method != "POST" {
-		return ""
+		return view(nil)
 	}
 
 	r.ParseForm()
@@ -52,31 +52,27 @@ func handleAddPage(db *razlink.DB, w http.ResponseWriter, r *http.Request) inter
 	pw := r.FormValue("password")
 	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
+		return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
 	}
 
 	e := razlink.NewEntry(url, pw, method)
 	id, err := db.InsertEntry(nil, e)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
+		return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
 	}
 
 	db.InsertLog(id, r)
 
-	http.SetCookie(w, &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"})
-	http.Redirect(w, r, "/add/"+id, http.StatusSeeOther)
-	return nil
+	cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
+	return razlink.CookieAndRedirectView(r, cookie, "/add/"+id)
 }
 
-func handleAddResultPage(db *razlink.DB, hostname string, w http.ResponseWriter, r *http.Request) interface{} {
+func handleAddResultPage(db *razlink.DB, hostname string, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return nil
+		return razlink.ErrorView("Not found", http.StatusNotFound)
 	}
 
 	decoy := filepath.Base(e.URL)
@@ -84,7 +80,7 @@ func handleAddResultPage(db *razlink.DB, hostname string, w http.ResponseWriter,
 		decoy = ""
 	}
 
-	view := struct {
+	data := struct {
 		Hostname string
 		ID       string
 		Decoy    string
@@ -96,7 +92,7 @@ func handleAddResultPage(db *razlink.DB, hostname string, w http.ResponseWriter,
 		Track:    e.Method == razlink.Track,
 	}
 
-	return &view
+	return view(&data)
 }
 
 // GetAddPages ...
@@ -106,16 +102,16 @@ func GetAddPages(db *razlink.DB, hostname string) []*razlink.Page {
 			Path:            "/add",
 			Title:           "Create a new link",
 			ContentTemplate: addPageT,
-			Handler: func(w http.ResponseWriter, r *http.Request) interface{} {
-				return handleAddPage(db, w, r)
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleAddPage(db, r, view)
 			},
 		},
 		&razlink.Page{
 			Path:            "/add/",
 			Title:           "Bookmark this page!",
 			ContentTemplate: addResultPageT,
-			Handler: func(w http.ResponseWriter, r *http.Request) interface{} {
-				return handleAddResultPage(db, hostname, w, r)
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleAddResultPage(db, hostname, r, view)
 			},
 		},
 	}

@@ -11,7 +11,7 @@ var layout = `
 <html>
 	<head>
 		<title>{{.Title}}</title>
-		<base href="{{.Base}}" target="_blank">
+		<base href="{{.Base}}">
 		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 		<style>
 		body {
@@ -57,35 +57,41 @@ func NewLayout() *Layout {
 }
 
 // CreatePageRenderer creates a page renderer function
-func (layout *Layout) CreatePageRenderer(title, content string, requestToData PageHandler) (func(http.ResponseWriter, *http.Request), error) {
-	clone, _ := layout.tmpl.Clone()
+func (layout *Layout) CreatePageRenderer(title, content string, handler PageHandler) (func(http.ResponseWriter, *http.Request), error) {
+	clone, err := layout.tmpl.Clone()
+	if err != nil {
+		return nil, err
+	}
+
 	tmpl, err := clone.Parse(content)
 	if err != nil {
 		return nil, err
 	}
 
-	if requestToData == nil {
-		requestToData = func(w http.ResponseWriter, r *http.Request) interface{} {
-			return ""
-		}
-	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := requestToData(w, r)
-		if data == nil {
-			return
+		viewFunc := func(data interface{}) PageView {
+			return func(w http.ResponseWriter) {
+				view := struct {
+					Title string
+					Base  string
+					Data  interface{}
+				}{
+					Title: title,
+					Base:  GetBase(r),
+					Data:  data,
+				}
+
+				tmpl.ExecuteTemplate(w, "layout", view)
+			}
 		}
 
-		view := struct {
-			Title string
-			Base  string
-			Data  interface{}
-		}{
-			Title: title,
-			Base:  GetBase(r),
-			Data:  data,
+		var view PageView
+		if handler == nil {
+			view = viewFunc(nil)
+		} else {
+			view = handler(r, viewFunc)
 		}
 
-		tmpl.ExecuteTemplate(w, "layout", view)
+		view(w)
 	}, nil
 }

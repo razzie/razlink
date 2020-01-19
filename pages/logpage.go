@@ -62,12 +62,11 @@ var logPageT = `
 {{end}}
 `
 
-func handleLogAuthPage(db *razlink.DB, w http.ResponseWriter, r *http.Request) interface{} {
+func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return nil
+		return razlink.ErrorView("Not found", http.StatusNotFound)
 	}
 
 	if r.Method == "POST" {
@@ -75,46 +74,40 @@ func handleLogAuthPage(db *razlink.DB, w http.ResponseWriter, r *http.Request) i
 		pw := r.FormValue("password")
 
 		if !e.MatchPassword(pw) {
-			http.Error(w, "Wrong password", http.StatusUnauthorized)
-			return nil
+			return razlink.ErrorView("Wrong password", http.StatusUnauthorized)
 		}
 
-		http.SetCookie(w, &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"})
-		http.Redirect(w, r, "/logs/"+id, http.StatusSeeOther)
-		return nil
+		cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
+		return razlink.CookieAndRedirectView(r, cookie, "/logs/"+id)
 	}
 
-	return ""
+	return view(nil)
 }
 
-func handleLogPage(db *razlink.DB, logsPerPage int, w http.ResponseWriter, r *http.Request) interface{} {
+func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return nil
+		return razlink.ErrorView("Not found", http.StatusNotFound)
 	}
 
 	cookie, _ := r.Cookie(id)
 	if cookie == nil || cookie.Value != e.PasswordHash {
-		http.Redirect(w, r, "/logs-auth/"+id, http.StatusSeeOther)
-		return nil
+		return razlink.RedirectView(r, "/logs-auth/"+id)
 	}
 
 	if len(r.URL.Path) < 6+len(id)+1 { // /logs/ID/
-		http.Redirect(w, r, "/logs/"+id+"/1", http.StatusSeeOther)
-		return nil
+		return razlink.RedirectView(r, "/logs/"+id+"/1")
 	}
 
 	actionOrPage := r.URL.Path[6+len(id)+1:]
 
 	if actionOrPage == "clear" {
 		db.DeleteLogs(id)
-		http.Redirect(w, r, "/logs/"+id+"/1", http.StatusSeeOther)
-		return nil
+		return razlink.RedirectView(r, "/logs/"+id+"/1")
 	}
 
-	var view struct {
+	var data struct {
 		Logs  []razlink.Log
 		Pages []int
 	}
@@ -125,9 +118,9 @@ func handleLogPage(db *razlink.DB, logsPerPage int, w http.ResponseWriter, r *ht
 	if logsCount > 0 && logsCount%logsPerPage == 0 {
 		pageCount--
 	}
-	view.Pages = make([]int, pageCount)
-	for i := range view.Pages {
-		view.Pages[i] = i + 1
+	data.Pages = make([]int, pageCount)
+	for i := range data.Pages {
+		data.Pages[i] = i + 1
 	}
 
 	// logs
@@ -135,12 +128,11 @@ func handleLogPage(db *razlink.DB, logsPerPage int, w http.ResponseWriter, r *ht
 	if page < 1 {
 		page = 1
 	} else if page > pageCount {
-		http.Redirect(w, r, fmt.Sprintf("/logs/%s/%d", id, pageCount), http.StatusSeeOther)
-		return nil
+		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
 	}
-	view.Logs, _ = db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)
+	data.Logs, _ = db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)
 
-	return &view
+	return view(&data)
 }
 
 // GetLogPages ...
@@ -150,16 +142,16 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path:            "/logs/",
 			Title:           "Logs",
 			ContentTemplate: logPageT,
-			Handler: func(w http.ResponseWriter, r *http.Request) interface{} {
-				return handleLogPage(db, logsPerPage, w, r)
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleLogPage(db, logsPerPage, r, view)
 			},
 		},
 		&razlink.Page{
 			Path:            "/logs-auth/",
 			Title:           "Logs authentication",
 			ContentTemplate: logAuthPageT,
-			Handler: func(w http.ResponseWriter, r *http.Request) interface{} {
-				return handleLogAuthPage(db, w, r)
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleLogAuthPage(db, r, view)
 			},
 		},
 	}
