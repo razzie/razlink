@@ -13,9 +13,15 @@ type Server struct {
 
 // NewServer creates a new Server
 func NewServer() *Server {
-	return &Server{
+	srv := &Server{
 		layout: NewLayout(),
 	}
+
+	srv.mux.HandleFunc("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
+		WriteFavicon(w)
+	})
+
+	return srv
 }
 
 // AddPage adds a new servable page to the server

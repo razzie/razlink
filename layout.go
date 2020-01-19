@@ -7,9 +7,11 @@ import (
 
 var layout = `
 {{define "layout"}}
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>{{.Title}}</title>
+		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 		<style>
 		div.outer {
 			display: flex;
