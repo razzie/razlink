@@ -52,10 +52,11 @@ var logPageT = `
 		</tr>
 		{{end}}
 	</table>
+	{{$ID := .ID}}
 	{{range .Pages}}
-		<a href="{{.}}">{{.}}</a> |
+		<a href="/logs/{{$ID}}/{{.}}">{{.}}</a> |
 	{{end}}
-	<a href="clear">clear</a>
+	<a href="/logs/{{$ID}}/clear">clear</a>
 {{else}}
 	<strong>No logs yet!</strong>
 {{end}}
@@ -108,9 +109,12 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 	}
 
 	var data struct {
+		ID    string
 		Logs  []razlink.Log
 		Pages []int
 	}
+
+	data.ID = id
 
 	// pages
 	logsCount, _ := db.GetLogsCount(id)
