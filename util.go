@@ -41,6 +41,11 @@ func init() {
 	}
 }
 
+// GetInstanceID returns the ID of the current razlink instance, which is prepended to entry IDs
+func GetInstanceID() string {
+	return instance
+}
+
 // NewID returns a new (hopefully unique) ID for entries
 func NewID() string {
 	return instance + "-" + strconv.FormatInt(time.Now().UnixNano(), 36)

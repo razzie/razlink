@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -17,6 +18,8 @@ func main() {
 	redisDb := flag.Int("redis-db", 0, "Redis database (0-15)")
 	cliMode := flag.Bool("cli", false, "Enable CLI mode instead of http server")
 	flag.Parse()
+
+	fmt.Println("Starting Razlink instance:", razlink.GetInstanceID())
 
 	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
 	if err != nil {
