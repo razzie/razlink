@@ -1,16 +1,10 @@
 package pages
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/razzie/razlink"
 )
-
-func embed(w http.ResponseWriter, url string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, `<iframe src="%s" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%%; height:100%%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>`, url)
-}
 
 func handleViewPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
