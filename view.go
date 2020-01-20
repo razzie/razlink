@@ -2,7 +2,7 @@ package razlink
 
 import (
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -38,11 +38,14 @@ func CookieAndRedirectView(r *http.Request, cookie *http.Cookie, url string) Pag
 
 // CopyView ...
 func CopyView(resp *http.Response) PageView {
+	bytes, _ := ioutil.ReadAll(resp.Body)
+
 	return func(w http.ResponseWriter) {
 		for k, v := range resp.Header {
 			w.Header().Set(k, v[0])
 		}
 		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
+		//io.Copy(w, resp.Body)
+		w.Write(bytes)
 	}
 }
