@@ -140,7 +140,9 @@ func NewCLI(db *razlink.DB) *CLI {
 	}
 
 	cli.cmds["logs"] = func(args []string) {
-		if len(args) != 3 {
+		if len(args) == 1 {
+			args = append(args, "0", "19")
+		} else if len(args) != 3 {
 			fmt.Println("usage: logs <ID> <first> <last>")
 			return
 		}
