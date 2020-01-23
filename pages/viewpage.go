@@ -6,7 +6,7 @@ import (
 	"github.com/razzie/razlink"
 )
 
-func handleViewPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -64,7 +64,7 @@ func GetViewPage(db *razlink.DB) *razlink.Page {
 	return &razlink.Page{
 		Path: "/x/",
 		Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
-			return handleViewPage(db, r, view)
+			return handleViewPage(db, r)
 		},
 	}
 }
