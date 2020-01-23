@@ -1,6 +1,10 @@
 package pages
 
-import "github.com/razzie/razlink"
+import (
+	"net/http"
+
+	"github.com/razzie/razlink"
+)
 
 var welcomePageT = `
 <strong>Welcome to razlink!</strong><br />
@@ -24,5 +28,11 @@ func GetWelcomePage() *razlink.Page {
 		Path:            "/",
 		Title:           "Welcome to razlink!",
 		ContentTemplate: welcomePageT,
+		Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			if len(r.URL.Path) > 1 {
+				return razlink.RedirectView(r, "/")
+			}
+			return view(nil)
+		},
 	}
 }
