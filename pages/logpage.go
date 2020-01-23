@@ -36,7 +36,7 @@ var logPageT = `
 		</tr>
 		{{range .Logs}}
 		<tr>
-			<td>{{.Time}}</td>
+			<td>{{.Time.Format "Mon, 02 Jan 2006 15:04:05 MST"}}</td>
 			<td>{{.IP}}</td>
 			<td>
 				{{range .Hostnames}}
