@@ -9,7 +9,6 @@ import (
 )
 
 var addPageT = `
-{{define "page"}}
 <form method="post">
 	URL:<br />
 	<input type="text" name="url" /><br />
@@ -19,11 +18,9 @@ var addPageT = `
 	<br />
 	<input type="submit" value="Submit" />
 </form>
-{{end}}
 `
 
 var addResultPageT = `
-{{define "page"}}
 <strong>Bookmark this page!</strong><br />
 <br />
 {{if .Track}}
@@ -39,7 +36,6 @@ var addResultPageT = `
 <br />
 Access logs:<br />
 <a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
-{{end}}
 `
 
 func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {

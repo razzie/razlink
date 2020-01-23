@@ -63,7 +63,7 @@ func (layout *Layout) CreatePageRenderer(title, content string, handler PageHand
 		return nil, err
 	}
 
-	tmpl, err := clone.Parse(content)
+	tmpl, err := clone.New("page").Parse(content)
 	if err != nil {
 		return nil, err
 	}

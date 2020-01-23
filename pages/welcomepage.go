@@ -3,7 +3,6 @@ package pages
 import "github.com/razzie/razlink"
 
 var welcomePageT = `
-{{define "page"}}
 <strong>Welcome to razlink!</strong><br />
 <br />
 This is a lightweight link proxy/redirect service with logging.<br />
@@ -17,7 +16,6 @@ There are 4 automatic operation modes based on the URL:<br />
 	<li>Track - write <strong>.</strong> to URL field to enable transparent pixel track mode</li>
 </ul><br />
 Check out the source code at <a href="https://github.com/razzie/razlink" target="_blank">github.com/razzie/razlink</a>.<br />
-{{end}}
 `
 
 // GetWelcomePage ...

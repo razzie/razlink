@@ -9,18 +9,15 @@ import (
 )
 
 var logAuthPageT = `
-{{define "page"}}
 <form method="post">
 	Log password:<br />
 	<input type="password" name="password" /><br />
 	<br />
 	<input type="submit" value="Submit" />
 </form>
-{{end}}
 `
 
 var logPageT = `
-{{define "page"}}
 {{if .Logs}}
 	<table style="border-spacing: 10px; border-collapse: separate">
 		<tr>
@@ -59,7 +56,6 @@ var logPageT = `
 	<a href="/logs/{{$ID}}/clear">clear</a>
 {{else}}
 	<strong>No logs yet!</strong>
-{{end}}
 {{end}}
 `
 
