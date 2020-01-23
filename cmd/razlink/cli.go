@@ -44,7 +44,17 @@ func NewCLI(db *razlink.DB) *CLI {
 			return
 		}
 
+		if len(entries) == 0 {
+			fmt.Println("No results")
+			return
+		}
+
+		fmt.Println("Permanent entries are marked with *")
+
 		for id, e := range entries {
+			if e.Permanent {
+				id += "*"
+			}
 			fmt.Println(id, "-", e.URL)
 		}
 	}
@@ -114,6 +124,35 @@ func NewCLI(db *razlink.DB) *CLI {
 		}
 
 		e.SetPassword(pw)
+		err = db.SetEntry(id, e)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		fmt.Println("done")
+	}
+
+	cli.cmds["set-permanent"] = func(args []string) {
+		if len(args) != 2 {
+			fmt.Println("usage: set-permanent <ID> <true/false>")
+			return
+		}
+
+		id := args[0]
+		perm, err := strconv.ParseBool(args[1])
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		e, err := db.GetEntry(id)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		e.Permanent = perm
 		err = db.SetEntry(id, e)
 		if err != nil {
 			fmt.Println("error:", err)
