@@ -3,6 +3,7 @@ package pages
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/razzie/razlink"
@@ -46,6 +47,11 @@ func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razli
 	r.ParseForm()
 	url := r.FormValue("url")
 	pw := r.FormValue("password")
+
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
+
 	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
 	if err != nil {
 		return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
