@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// ServeMethod defines how is a request server
+// ServeMethod defines how to serve a request
 type ServeMethod int
 
 // Available serve methods
