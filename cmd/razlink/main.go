@@ -19,8 +19,6 @@ func main() {
 	cliMode := flag.Bool("cli", false, "Enable CLI mode instead of http server")
 	flag.Parse()
 
-	fmt.Println("Starting Razlink instance:", razlink.GetInstanceID())
-
 	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
 	if err != nil {
 		panic(err)
@@ -31,6 +29,7 @@ func main() {
 	if *cliMode {
 		NewCLI(db).Run()
 	} else {
+		fmt.Println("Starting Razlink instance:", razlink.GetInstanceID())
 		addr := "localhost:" + strconv.Itoa(*port)
 		srv := razlink.NewServer()
 		srv.AddPages(pages.GetAddPages(db, *hostname)...)
