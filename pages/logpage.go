@@ -22,17 +22,17 @@ var logAuthPageT = `
 
 var logPageT = `
 {{if .Logs}}
-	<table style="border-spacing: 10px; border-collapse: separate">
+	<table>
 		<tr>
-			<td><strong>Time</strong></td>
-			<td><strong>IP</strong></td>
-			<td><strong>Hostnames</strong></td>
-			<td><strong>Country</strong></td>
-			<td><strong>Region</strong></td>
-			<td><strong>City</strong></td>
-			<td><strong>OS</strong></td>
-			<td><strong>Browser</strong></td>
-			<td><strong>Referer</strong></td>
+			<td>Time</td>
+			<td>IP</td>
+			<td>Hostnames</td>
+			<td>Country</td>
+			<td>Region</td>
+			<td>City</td>
+			<td>OS</td>
+			<td>Browser</td>
+			<td>Referer</td>
 		</tr>
 		{{range .Logs}}
 		<tr>
@@ -52,11 +52,13 @@ var logPageT = `
 		</tr>
 		{{end}}
 	</table>
-	{{$ID := .ID}}
-	{{range .Pages}}
-		<a href="/logs/{{$ID}}/{{.}}">{{.}}</a> |
-	{{end}}
-	<a href="/logs/{{$ID}}/clear">clear</a>
+	<form method="get">
+		{{$ID := .ID}}
+		{{range .Pages}}
+			<button type="submit" formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
+		{{end}}
+		<button type="submit" formaction="/logs/{{$ID}}/clear">clear</button>
+	</form>
 {{else}}
 	<strong>No logs yet!</strong>
 {{end}}
@@ -96,7 +98,7 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 		return razlink.RedirectView(r, "/logs-auth/"+id)
 	}
 
-	if len(r.URL.Path) < 6+len(id)+1 { // /logs/ID/
+	if len(r.URL.Path) <= 6+len(id)+1 { // /logs/ID/
 		return razlink.RedirectView(r, "/logs/"+id+"/1")
 	}
 

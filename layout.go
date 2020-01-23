@@ -15,7 +15,7 @@ var layout = `
 		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 		<style>
 		body {
-			background-color: #ffffff;
+			background-color: white;
 			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23808080' fill-opacity='0.5' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 		}
 		div.outer {
@@ -24,10 +24,25 @@ var layout = `
 			justify-content: center;
 		}
 		div.inner {
-			background-color: #ffffff;
+			background-color: white;
 			border: 1px solid black;
 			padding: 1rem;
 			display: inline-flex;
+		}
+		table {
+			border-collapse: collapse;
+			margin-bottom: 1rem;
+		}
+		tr:nth-child(odd) > td {
+			background-color: whitesmoke;
+		}
+		tr:nth-child(1) > td {
+			font-weight: bold;
+			border-bottom: 1px solid black;
+			background-color: white;
+		}
+		td {
+			padding: 10px;
 		}
 		</style>
 	</head>
