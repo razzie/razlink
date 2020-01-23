@@ -9,6 +9,9 @@ import (
 )
 
 var logAuthPageT = `
+{{if .}}
+<strong style="color: red">{{.}}</strong><br /><br />
+{{end}}
 <form method="post">
 	Log password:<br />
 	<input type="password" name="password" /><br />
@@ -71,7 +74,7 @@ func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) r
 		pw := r.FormValue("password")
 
 		if !e.MatchPassword(pw) {
-			return razlink.ErrorView("Wrong password", http.StatusUnauthorized)
+			return view("Wrong password")
 		}
 
 		cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
