@@ -37,6 +37,9 @@ func NewLog(r *http.Request) Log {
 	}
 
 	l.Hostnames, _ = net.LookupAddr(ip)
+	if len(l.Hostnames) > 5 { // this would normally never happen, but let's make sure anyway
+		l.Hostnames = l.Hostnames[:5]
+	}
 
 	loc, _ := GetLocation(ip)
 	if loc != nil {
