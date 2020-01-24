@@ -11,8 +11,9 @@ var layout = `
 <html>
 	<head>
 		<title>{{.Title}}</title>
-		<base href="{{.Base}}">
+		<base href="{{.Base}}" />
 		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+		<meta name="author" content="Gábor Görzsöny" />
 		<style>
 		body {
 			background-color: white;
@@ -50,7 +51,7 @@ var layout = `
 		<div class="outer">
 			<div class="inner">
 				<div>
-				{{template "page" .Data}}
+					{{template "page" .Data}}
 				</div>
 			</div>
 		</div>
