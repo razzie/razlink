@@ -53,7 +53,7 @@ func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razli
 		return view("Password mismatch")
 	}
 
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+	if url != "." && !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "http://" + url
 	}
 
