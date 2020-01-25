@@ -17,6 +17,7 @@ func main() {
 	redisPw := flag.String("redis-pw", "", "Redis password")
 	redisDb := flag.Int("redis-db", 0, "Redis database (0-15)")
 	cliMode := flag.Bool("cli", false, "Enable CLI mode instead of http server")
+	viewMode := flag.Bool("view-mode", false, "View-mode disables welcome and create pages")
 	flag.Parse()
 
 	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
@@ -32,9 +33,10 @@ func main() {
 		fmt.Println("Starting Razlink instance:", razlink.InstanceID)
 		addr := "localhost:" + strconv.Itoa(*port)
 		srv := razlink.NewServer()
-		srv.AddPages(pages.GetCreatePages(db, *hostname)...)
-		srv.AddPages(pages.GetLogPages(db, 20)...)
-		srv.AddPages(pages.GetViewPage(db), pages.GetWelcomePage())
+		if !*viewMode {
+			srv.AddPages(append(pages.GetCreatePages(db, *hostname), pages.GetWelcomePage())...)
+		}
+		srv.AddPages(append(pages.GetLogPages(db, 20), pages.GetViewPage(db))...)
 		http.ListenAndServe(addr, srv)
 	}
 }
