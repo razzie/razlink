@@ -5,12 +5,11 @@ import (
 	"net/http"
 )
 
-var layout = `
-{{define "layout"}}
+var layoutT = `
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>{{.Title}}</title>
+		{{if .Title}}<title>{{.Title}}</title>{{end}}
 		<base href="{{.Base}}" />
 		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 		<meta name="author" content="Gábor Görzsöny" />
@@ -57,57 +56,32 @@ var layout = `
 		</div>
 	</body>
 </html>
-{{end}}
 `
 
-// Layout ...
-type Layout struct {
-	tmpl *template.Template
-}
+var layout = template.Must(template.New("layout").Parse(layoutT))
 
-// NewLayout creates a new Layout
-func NewLayout() *Layout {
-	return &Layout{
-		tmpl: template.Must(template.New("").Parse(layout)),
-	}
-}
+// LayoutRenderer is a function that renders a html page
+type LayoutRenderer func(w http.ResponseWriter, r *http.Request, title string, data interface{})
 
-// CreatePageRenderer creates a page renderer function
-func (layout *Layout) CreatePageRenderer(title, content string, handler PageHandler) (func(http.ResponseWriter, *http.Request), error) {
-	clone, err := layout.tmpl.Clone()
+// BindLayout creates a layout renderer function
+func BindLayout(pageTemplate string) (LayoutRenderer, error) {
+	cloneLayout, _ := layout.Clone()
+	tmpl, err := cloneLayout.New("page").Parse(pageTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	tmpl, err := clone.New("page").Parse(content)
-	if err != nil {
-		return nil, err
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		viewFunc := func(data interface{}) PageView {
-			return func(w http.ResponseWriter) {
-				view := struct {
-					Title string
-					Base  string
-					Data  interface{}
-				}{
-					Title: title,
-					Base:  GetBase(r),
-					Data:  data,
-				}
-
-				tmpl.ExecuteTemplate(w, "layout", view)
-			}
+	return func(w http.ResponseWriter, r *http.Request, title string, data interface{}) {
+		var view struct {
+			Title string
+			Base  string
+			Data  interface{}
 		}
 
-		var view PageView
-		if handler == nil {
-			view = viewFunc(nil)
-		} else {
-			view = handler(r, viewFunc)
-		}
+		view.Title = title
+		view.Base = GetBase(r)
+		view.Data = data
 
-		view(w)
+		tmpl.ExecuteTemplate(w, "layout", &view)
 	}, nil
 }

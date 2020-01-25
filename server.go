@@ -7,26 +7,21 @@ import (
 
 // Server ...
 type Server struct {
-	mux    http.ServeMux
-	layout *Layout
+	mux http.ServeMux
 }
 
 // NewServer creates a new Server
 func NewServer() *Server {
-	srv := &Server{
-		layout: NewLayout(),
-	}
-
+	srv := &Server{}
 	srv.mux.HandleFunc("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
 		WriteFavicon(w)
 	})
-
 	return srv
 }
 
 // AddPage adds a new servable page to the server
 func (srv *Server) AddPage(page *Page) error {
-	renderer, err := srv.layout.CreatePageRenderer(page.Title, page.ContentTemplate, page.Handler)
+	renderer, err := page.BindLayout()
 	if err != nil {
 		return err
 	}
