@@ -32,7 +32,7 @@ func main() {
 		fmt.Println("Starting Razlink instance:", razlink.InstanceID)
 		addr := "localhost:" + strconv.Itoa(*port)
 		srv := razlink.NewServer()
-		srv.AddPages(pages.GetAddPages(db, *hostname)...)
+		srv.AddPages(pages.GetCreatePages(db, *hostname)...)
 		srv.AddPages(pages.GetLogPages(db, 20)...)
 		srv.AddPages(pages.GetViewPage(db), pages.GetWelcomePage())
 		http.ListenAndServe(addr, srv)

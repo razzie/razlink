@@ -9,7 +9,7 @@ import (
 	"github.com/razzie/razlink"
 )
 
-var addPageT = `
+var createPageT = `
 {{if .}}
 <strong style="color: red">{{.}}</strong><br /><br />
 {{end}}
@@ -21,7 +21,7 @@ var addPageT = `
 </form>
 `
 
-var addResultPageT = `
+var createResultPageT = `
 <strong>Bookmark this page!</strong><br />
 <br />
 {{if .Track}}
@@ -39,7 +39,7 @@ Access logs:<br />
 <a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
 `
 
-func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	if r.Method != "POST" {
 		return view(nil)
 	}
@@ -71,10 +71,10 @@ func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razli
 	db.InsertLog(id, r)
 
 	cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
-	return razlink.CookieAndRedirectView(r, cookie, "/add/"+id)
+	return razlink.CookieAndRedirectView(r, cookie, "/link/"+id)
 }
 
-func handleAddResultPage(db *razlink.DB, hostname string, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 
 	e, _ := db.GetEntry(id)
@@ -102,23 +102,30 @@ func handleAddResultPage(db *razlink.DB, hostname string, r *http.Request, view 
 	return view(&data)
 }
 
-// GetAddPages ...
-func GetAddPages(db *razlink.DB, hostname string) []*razlink.Page {
+// GetCreatePages ...
+func GetCreatePages(db *razlink.DB, hostname string) []*razlink.Page {
 	return []*razlink.Page{
 		&razlink.Page{
-			Path:            "/add",
+			Path:            "/create",
 			Title:           "Create a new link",
-			ContentTemplate: addPageT,
+			ContentTemplate: createPageT,
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
-				return handleAddPage(db, r, view)
+				return handleCreatePage(db, r, view)
 			},
 		},
 		&razlink.Page{
-			Path:            "/add/",
+			Path:            "/link/",
 			Title:           "Bookmark this page!",
-			ContentTemplate: addResultPageT,
+			ContentTemplate: createResultPageT,
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
-				return handleAddResultPage(db, hostname, r, view)
+				return handleCreateResultPage(db, hostname, r, view)
+			},
+		},
+		&razlink.Page{
+			Path: "/add/", // for legacy bookmarks
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				id, _ := getIDFromRequest(r)
+				return razlink.RedirectView(r, "/link/"+id)
 			},
 		},
 	}

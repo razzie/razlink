@@ -11,7 +11,7 @@ var welcomePageT = `
 <br />
 This is a lightweight link proxy/redirect service with logging.<br />
 <br />
-You can <a href="add">add a new link</a> with a custom password to view the visits.<br />
+You can <a href="create">add a new link</a> with a custom password to view the visits.<br />
 There are 4 automatic operation modes based on the URL:<br />
 <ul>
 	<li>Proxy - for files (e.g. an image)</li>
