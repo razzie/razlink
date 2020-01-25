@@ -74,14 +74,14 @@ func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) r
 		pw := r.FormValue("password")
 
 		if !e.MatchPassword(pw) {
-			return view("Wrong password")
+			return view("Wrong password", nil)
 		}
 
 		cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
 		return razlink.CookieAndRedirectView(r, cookie, "/logs/"+id)
 	}
 
-	return view(nil)
+	return view(nil, nil)
 }
 
 func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) razlink.PageView {
@@ -97,8 +97,8 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 	}
 
 	pageCount := getLogPageCount(db, id, logsPerPage)
-
 	page, _ := strconv.Atoi(trailing)
+
 	if page < 1 {
 		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/1", id))
 	} else if page > pageCount {
@@ -106,8 +106,8 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 	}
 
 	logs := getLogs(db, id, page, logsPerPage)
-
-	return view(newLogPageData(id, logs, pageCount))
+	title := "Logs of " + id
+	return view(newLogPageData(id, logs, pageCount), &title)
 }
 
 func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {

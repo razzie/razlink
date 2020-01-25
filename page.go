@@ -16,7 +16,7 @@ type Page struct {
 type PageView func(w http.ResponseWriter)
 
 // ViewFunc is a function that produces a PageView using the input data
-type ViewFunc func(data interface{}) PageView
+type ViewFunc func(data interface{}, title *string) PageView
 
 // PageHandler handles the page's requests
 // If there was no error, the handler should call viewFunc and return the resulted PageView
@@ -30,15 +30,19 @@ func (page *Page) BindLayout() (func(http.ResponseWriter, *http.Request), error)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		viewFunc := func(data interface{}) PageView {
+		viewFunc := func(data interface{}, title *string) PageView {
 			return func(w http.ResponseWriter) {
-				renderer(w, r, page.Title, data)
+				if title != nil {
+					renderer(w, r, *title, data)
+				} else {
+					renderer(w, r, page.Title, data)
+				}
 			}
 		}
 
 		var view PageView
 		if page.Handler == nil {
-			view = viewFunc(nil)
+			view = viewFunc(nil, nil)
 		} else {
 			view = page.Handler(r, viewFunc)
 		}

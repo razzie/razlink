@@ -41,7 +41,7 @@ Access logs:<br />
 
 func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	if r.Method != "POST" {
-		return view(nil)
+		return view(nil, nil)
 	}
 
 	r.ParseForm()
@@ -50,7 +50,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 	pw2 := r.FormValue("confirm_password")
 
 	if pw != pw2 {
-		return view("Password mismatch")
+		return view("Password mismatch", nil)
 	}
 
 	if url != "." && !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
@@ -99,7 +99,7 @@ func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, vi
 		Track:    e.Method == razlink.Track,
 	}
 
-	return view(&data)
+	return view(&data, &id)
 }
 
 // GetCreatePages ...
@@ -115,7 +115,6 @@ func GetCreatePages(db *razlink.DB, hostname string) []*razlink.Page {
 		},
 		&razlink.Page{
 			Path:            "/link/",
-			Title:           "Bookmark this page!",
 			ContentTemplate: createResultPageT,
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
 				return handleCreateResultPage(db, hostname, r, view)

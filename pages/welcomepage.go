@@ -32,7 +32,7 @@ func GetWelcomePage() *razlink.Page {
 			if len(r.URL.Path) > 1 {
 				return razlink.RedirectView(r, "/")
 			}
-			return view(nil)
+			return view(nil, nil)
 		},
 	}
 }
