@@ -18,6 +18,18 @@ var logAuthPageT = `
 </form>
 `
 
+var logChangePwPageT = `
+{{if .}}
+<strong style="color: red">{{.}}</strong><br /><br />
+{{end}}
+<form method="post">
+	<input type="password" name="old_password" placeholder="Old password" /><br />
+	<input type="password" name="password" placeholder="New password" /><br />
+	<input type="password" name="confirm_password" placeholder="Confirm new password" /><br />
+	<button>Save</button>
+</form>
+`
+
 var logPageT = `
 {{if .Logs}}
 	<table>
@@ -55,7 +67,8 @@ var logPageT = `
 		{{range .Pages}}
 			<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
 		{{end}}
-		<button formaction="/logs-clear/{{$ID}}">clear</button>
+		<button formaction="/logs-clear/{{$ID}}/">clear</button>
+		<button formaction="/logs-change-password/{{$ID}}/">change password</button>
 	</form>
 {{else}}
 	<strong>No logs yet!</strong>
@@ -126,6 +139,40 @@ func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {
 	return razlink.RedirectView(r, "/logs/"+id+"/1")
 }
 
+func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+	id, _ := getIDFromRequest(r)
+	e, _ := db.GetEntry(id)
+	if e == nil {
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+	}
+
+	if r.Method != "POST" {
+		return view(nil, nil)
+	}
+
+	r.ParseForm()
+	oldpw := r.FormValue("old_password")
+	pw := r.FormValue("password")
+	pw2 := r.FormValue("confirm_password")
+
+	if pw != pw2 {
+		return view("Password mismatch", nil)
+	}
+
+	if !e.MatchPassword(oldpw) {
+		return view("Wrong old password", nil)
+	}
+
+	e.SetPassword(pw)
+	err := db.SetEntry(id, e)
+	if err != nil {
+		return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
+	}
+
+	cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
+	return razlink.CookieAndRedirectView(r, cookie, "/logs/"+id)
+}
+
 // GetLogPages ...
 func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 	return []*razlink.Page{
@@ -149,6 +196,14 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path: "/logs-clear/",
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
 				return handleLogClear(db, r)
+			},
+		},
+		&razlink.Page{
+			Path:            "/logs-change-password/",
+			Title:           "Change password",
+			ContentTemplate: logChangePwPageT,
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleLogChangePwPage(db, r, view)
 			},
 		},
 	}
