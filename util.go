@@ -13,15 +13,27 @@ import (
 	"time"
 )
 
-var instance string
-var privateIPBlocks []*net.IPNet
+// InstanceID is a unique ID for this instance (to be prepended to entry IDs)
+var InstanceID = newInstanceID()
 
-func init() {
-	// set up a unique ID for this instance (to be prepended to entry IDs)
+func newInstanceID() string {
 	i := uint16(time.Now().UnixNano())
-	instance = strconv.FormatInt(int64(i), 36)
+	return strconv.FormatInt(int64(i), 36)
+}
 
-	// initializing private IP address spaces
+// NewID returns a new (hopefully unique) ID for entries
+func NewID() string {
+	return InstanceID + "-" + strconv.FormatInt(time.Now().UnixNano(), 36)
+}
+
+// Hash returns the SHA1 hash of a string
+func Hash(s string) string {
+	algorithm := sha1.New()
+	algorithm.Write([]byte(s))
+	return hex.EncodeToString(algorithm.Sum(nil))
+}
+
+func getPrivateIPBlocks() (blocks []*net.IPNet) {
 	// https://stackoverflow.com/a/50825191
 	for _, cidr := range []string{
 		"127.0.0.0/8",    // IPv4 loopback
@@ -37,26 +49,12 @@ func init() {
 		if err != nil {
 			panic(fmt.Errorf("parse error on %q: %v", cidr, err))
 		}
-		privateIPBlocks = append(privateIPBlocks, block)
+		blocks = append(blocks, block)
 	}
+	return
 }
 
-// GetInstanceID returns the ID of the current razlink instance, which is prepended to entry IDs
-func GetInstanceID() string {
-	return instance
-}
-
-// NewID returns a new (hopefully unique) ID for entries
-func NewID() string {
-	return instance + "-" + strconv.FormatInt(time.Now().UnixNano(), 36)
-}
-
-// Hash returns the SHA1 hash of a string
-func Hash(s string) string {
-	algorithm := sha1.New()
-	algorithm.Write([]byte(s))
-	return hex.EncodeToString(algorithm.Sum(nil))
-}
+var privateIPBlocks = getPrivateIPBlocks()
 
 // IsPrivateIP returns true if the given IP address belongs to private network space
 func IsPrivateIP(ip net.IP) bool {
