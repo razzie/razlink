@@ -55,7 +55,7 @@ var logPageT = `
 		{{range .Pages}}
 			<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
 		{{end}}
-		<button formaction="/logs/{{$ID}}/clear">clear</button>
+		<button formaction="/logs-clear/{{$ID}}">clear</button>
 	</form>
 {{else}}
 	<strong>No logs yet!</strong>
@@ -85,6 +85,32 @@ func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) r
 }
 
 func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+	id, trailing := getIDFromRequest(r)
+	e, _ := db.GetEntry(id)
+	if e == nil {
+		return razlink.ErrorView("Not found", http.StatusNotFound)
+	}
+
+	cookie, _ := r.Cookie(id)
+	if cookie == nil || cookie.Value != e.PasswordHash {
+		return razlink.RedirectView(r, "/logs-auth/"+id)
+	}
+
+	pageCount := getLogPageCount(db, id, logsPerPage)
+
+	page, _ := strconv.Atoi(trailing)
+	if page < 1 {
+		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/1", id))
+	} else if page > pageCount {
+		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
+	}
+
+	logs := getLogs(db, id, page, logsPerPage)
+
+	return view(newLogPageData(id, logs, pageCount))
+}
+
+func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -96,46 +122,8 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 		return razlink.RedirectView(r, "/logs-auth/"+id)
 	}
 
-	if len(r.URL.Path) <= 6+len(id)+1 { // /logs/ID/
-		return razlink.RedirectView(r, "/logs/"+id+"/1")
-	}
-
-	actionOrPage := r.URL.Path[6+len(id)+1:]
-
-	if actionOrPage == "clear" {
-		db.DeleteLogs(id)
-		return razlink.RedirectView(r, "/logs/"+id+"/1")
-	}
-
-	var data struct {
-		ID    string
-		Logs  []razlink.Log
-		Pages []int
-	}
-
-	data.ID = id
-
-	// pages
-	logsCount, _ := db.GetLogsCount(id)
-	pageCount := (logsCount / logsPerPage) + 1
-	if logsCount > 0 && logsCount%logsPerPage == 0 {
-		pageCount--
-	}
-	data.Pages = make([]int, pageCount)
-	for i := range data.Pages {
-		data.Pages[i] = i + 1
-	}
-
-	// logs
-	page, _ := strconv.Atoi(actionOrPage)
-	if page < 1 {
-		page = 1
-	} else if page > pageCount {
-		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
-	}
-	data.Logs, _ = db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)
-
-	return view(&data)
+	db.DeleteLogs(id)
+	return razlink.RedirectView(r, "/logs/"+id+"/1")
 }
 
 // GetLogPages ...
@@ -157,5 +145,42 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 				return handleLogAuthPage(db, r, view)
 			},
 		},
+		&razlink.Page{
+			Path: "/logs-clear/",
+			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+				return handleLogClear(db, r)
+			},
+		},
+	}
+}
+
+func getLogPageCount(db *razlink.DB, id string, logsPerPage int) int {
+	logsCount, _ := db.GetLogsCount(id)
+	pageCount := (logsCount / logsPerPage) + 1
+	if logsCount > 0 && logsCount%logsPerPage == 0 {
+		pageCount--
+	}
+	return pageCount
+}
+
+func getLogs(db *razlink.DB, id string, page, logsPerPage int) []razlink.Log {
+	logs, _ := db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)
+	return logs
+}
+
+func newLogPageData(id string, logs []razlink.Log, pageCount int) interface{} {
+	pages := make([]int, pageCount)
+	for i := range pages {
+		pages[i] = i + 1
+	}
+
+	return &struct {
+		ID    string
+		Logs  []razlink.Log
+		Pages []int
+	}{
+		ID:    id,
+		Logs:  logs,
+		Pages: pages,
 	}
 }
