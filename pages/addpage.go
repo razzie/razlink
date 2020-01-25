@@ -10,14 +10,14 @@ import (
 )
 
 var addPageT = `
+{{if .}}
+<strong style="color: red">{{.}}</strong><br /><br />
+{{end}}
 <form method="post">
-	URL:<br />
-	<input type="text" name="url" /><br />
-	<br />
-	Log password:<br />
-	<input type="password" name="password" /><br />
-	<br />
-	<input type="submit" value="Submit" />
+	<input type="text" name="url" placeholder="URL" style="min-width: 400px" /><br />
+	<input type="password" name="password" placeholder="Password for logs" /><br />
+	<input type="password" name="confirm_password" placeholder="Confirm password" /><br />
+	<button>Create</button>
 </form>
 `
 
@@ -47,6 +47,11 @@ func handleAddPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razli
 	r.ParseForm()
 	url := r.FormValue("url")
 	pw := r.FormValue("password")
+	pw2 := r.FormValue("confirm_password")
+
+	if pw != pw2 {
+		return view("Password mismatch")
+	}
 
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "http://" + url

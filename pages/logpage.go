@@ -13,10 +13,8 @@ var logAuthPageT = `
 <strong style="color: red">{{.}}</strong><br /><br />
 {{end}}
 <form method="post">
-	Log password:<br />
-	<input type="password" name="password" /><br />
-	<br />
-	<input type="submit" value="Submit" />
+	<input type="password" name="password" placeholder="Password" /><br />
+	<button>Enter</button>
 </form>
 `
 
@@ -55,9 +53,9 @@ var logPageT = `
 	<form method="get">
 		{{$ID := .ID}}
 		{{range .Pages}}
-			<button type="submit" formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
+			<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
 		{{end}}
-		<button type="submit" formaction="/logs/{{$ID}}/clear">clear</button>
+		<button formaction="/logs/{{$ID}}/clear">clear</button>
 	</form>
 {{else}}
 	<strong>No logs yet!</strong>

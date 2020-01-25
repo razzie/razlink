@@ -29,6 +29,13 @@ var layoutT = `
 			padding: 1rem;
 			display: inline-flex;
 		}
+		input {
+			border: 0;
+			outline: 0;
+			background: transparent;
+			border-bottom: 1px solid black;
+			margin-bottom: 1rem;
+		}
 		table {
 			border-collapse: collapse;
 			margin-bottom: 1rem;
