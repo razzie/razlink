@@ -11,7 +11,7 @@ var layoutT = `
 	<head>
 		{{if .Title}}<title>{{.Title}}</title>{{end}}
 		<base href="{{.Base}}" />
-		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="favicon.png" type="image/png" />
 		<meta name="author" content="Gábor Görzsöny" />
 		<style>
 		body {

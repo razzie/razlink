@@ -13,7 +13,7 @@ type Server struct {
 // NewServer creates a new Server
 func NewServer() *Server {
 	srv := &Server{}
-	srv.mux.HandleFunc("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
+	srv.mux.HandleFunc("/favicon.png", func(w http.ResponseWriter, r *http.Request) {
 		WriteFavicon(w)
 	})
 	return srv
