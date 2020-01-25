@@ -59,13 +59,13 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 
 	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
 	if err != nil {
-		return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
+		return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
 	}
 
 	e := razlink.NewEntry(url, pw, method)
 	id, err := db.InsertEntry(nil, e)
 	if err != nil {
-		return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
+		return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
 	}
 
 	db.InsertLog(id, r)
@@ -79,7 +79,7 @@ func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, vi
 
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView("Not found", http.StatusNotFound)
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
 	decoy := filepath.Base(e.URL)

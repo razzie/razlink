@@ -6,10 +6,14 @@ import (
 	"net/http"
 )
 
+var errViewRenderer, _ = BindLayout("<strong>{{.}}</strong>")
+
 // ErrorView returns a PageView that represents an error
-func ErrorView(errmsg string, errcode int) PageView {
+func ErrorView(r *http.Request, errmsg string, errcode int) PageView {
 	return func(w http.ResponseWriter) {
-		http.Error(w, errmsg, errcode)
+		//http.Error(w, errmsg, errcode)
+		w.WriteHeader(errcode)
+		errViewRenderer(w, r, errmsg, errmsg)
 	}
 }
 

@@ -10,7 +10,7 @@ func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView("Not found", http.StatusNotFound)
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
 	defer db.InsertLog(id, r)
@@ -20,14 +20,14 @@ func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 		req, _ := http.NewRequest("GET", e.URL, nil)
 		resp, err := http.DefaultClient.Do(req.WithContext(r.Context()))
 		if err != nil {
-			return razlink.ErrorView(err.Error(), http.StatusInternalServerError)
+			return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
 		}
 		defer resp.Body.Close()
 
 		// Success is indicated with 2xx status codes:
 		statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
 		if !statusOK {
-			return razlink.ErrorView(resp.Status, resp.StatusCode)
+			return razlink.ErrorView(r, resp.Status, resp.StatusCode)
 		}
 
 		// in case the served content is not a file anymore
@@ -55,7 +55,7 @@ func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 		return razlink.WritePixel
 
 	default:
-		return razlink.ErrorView("Invalid serve method", http.StatusInternalServerError)
+		return razlink.ErrorView(r, "Invalid serve method", http.StatusInternalServerError)
 	}
 }
 

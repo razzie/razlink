@@ -66,7 +66,7 @@ func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) r
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView("Not found", http.StatusNotFound)
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
 	if r.Method == "POST" {
@@ -88,7 +88,7 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 	id, trailing := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView("Not found", http.StatusNotFound)
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
 	cookie, _ := r.Cookie(id)
@@ -114,7 +114,7 @@ func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView("Not found", http.StatusNotFound)
+		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
 	cookie, _ := r.Cookie(id)
