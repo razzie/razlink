@@ -59,7 +59,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 
 	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
 	if err != nil {
-		return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
+		return view(err.Error(), nil)
 	}
 
 	e := razlink.NewEntry(url, pw, method)
