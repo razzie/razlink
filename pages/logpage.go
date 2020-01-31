@@ -109,17 +109,23 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 		return razlink.RedirectView(r, "/logs-auth/"+id)
 	}
 
+	var first, last int
+	var logs []razlink.Log
+	title := "Logs of " + id
 	pageCount := getLogPageCount(db, id, logsPerPage)
-	page, _ := strconv.Atoi(trailing)
 
-	if page < 1 {
-		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/1", id))
-	} else if page > pageCount {
-		return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
+	if _, err := fmt.Sscanf(trailing, "%d..%d", &first, &last); err != nil {
+		page, _ := strconv.Atoi(trailing)
+		if page < 1 {
+			return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/1", id))
+		} else if page > pageCount {
+			return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
+		}
+		first = (page - 1) * logsPerPage
+		last = (page * logsPerPage) - 1
 	}
 
-	logs := getLogs(db, id, page, logsPerPage)
-	title := "Logs of " + id
+	logs, _ = db.GetLogs(id, first, last)
 	return view(newLogPageData(id, logs, pageCount), &title)
 }
 
@@ -216,11 +222,6 @@ func getLogPageCount(db *razlink.DB, id string, logsPerPage int) int {
 		pageCount--
 	}
 	return pageCount
-}
-
-func getLogs(db *razlink.DB, id string, page, logsPerPage int) []razlink.Log {
-	logs, _ := db.GetLogs(id, (page-1)*logsPerPage, (page*logsPerPage)-1)
-	return logs
 }
 
 func newLogPageData(id string, logs []razlink.Log, pageCount int) interface{} {
