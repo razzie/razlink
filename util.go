@@ -127,3 +127,11 @@ func GetBase(r *http.Request) string {
 	}
 	return "/"
 }
+
+// GetShorthandPath returns a shorthand version of a path in case it's too long
+func GetShorthandPath(path string) string {
+	if len(path) > 32 {
+		return path[:15] + ".." + path[len(path)-15:]
+	}
+	return path
+}

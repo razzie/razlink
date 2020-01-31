@@ -2,6 +2,7 @@ package pages
 
 import (
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -24,6 +25,11 @@ var createPageT = `
 var createResultPageT = `
 <strong>Bookmark this page!</strong><br />
 <br />
+{{if .ShorthandURL}}
+	Original URL:<br />
+	<a href="{{.URL}}">{{.ShorthandURL}}</a><br />
+	<br />
+{{end}}
 {{if .Track}}
 	Embed this in your website:<br />
 	&lt;img src="<a href="http://{{.Hostname}}/x/{{.ID}}">http://{{.Hostname}}/x/{{.ID}}</a>" width="1" height="1" /&gt;<br />
@@ -82,24 +88,37 @@ func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, vi
 		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
 	}
 
-	decoy := filepath.Base(e.URL)
-	if len(decoy) < 2 {
-		decoy = ""
-	}
-
 	data := struct {
-		Hostname string
-		ID       string
-		Decoy    string
-		Track    bool
+		URL          string
+		ShorthandURL string
+		Hostname     string
+		ID           string
+		Decoy        string
+		Track        bool
 	}{
 		Hostname: hostname,
 		ID:       id,
-		Decoy:    decoy,
 		Track:    e.Method == razlink.Track,
 	}
 
-	return view(&data, &id)
+	cookie, _ := r.Cookie(id)
+	if cookie != nil && cookie.Value == e.PasswordHash {
+		data.URL = e.URL
+		u, _ := url.Parse(e.URL)
+		if u != nil {
+			data.ShorthandURL = u.Host + razlink.GetShorthandPath(u.Path)
+		}
+
+		filename := filepath.Base(e.URL)
+		if len(filename) < 2 {
+			data.Decoy = ""
+		} else {
+			data.Decoy = razlink.GetShorthandPath(filename)
+		}
+	}
+
+	title := "Link: " + id
+	return view(&data, &title)
 }
 
 // GetCreatePages ...
