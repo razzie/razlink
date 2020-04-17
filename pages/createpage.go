@@ -63,7 +63,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 		url = "http://" + url
 	}
 
-	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second)
+	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second*3)
 	if err != nil {
 		return view(err.Error(), nil)
 	}
@@ -80,7 +80,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 	return razlink.CookieAndRedirectView(r, cookie, "/link/"+id)
 }
 
-func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
 	id, _ := getIDFromRequest(r)
 
 	e, _ := db.GetEntry(id)
@@ -96,7 +96,7 @@ func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, vi
 		Decoy        string
 		Track        bool
 	}{
-		Hostname: hostname,
+		Hostname: r.Host,
 		ID:       id,
 		Track:    e.Method == razlink.Track,
 	}
@@ -122,7 +122,7 @@ func handleCreateResultPage(db *razlink.DB, hostname string, r *http.Request, vi
 }
 
 // GetCreatePages ...
-func GetCreatePages(db *razlink.DB, hostname string) []*razlink.Page {
+func GetCreatePages(db *razlink.DB) []*razlink.Page {
 	return []*razlink.Page{
 		&razlink.Page{
 			Path:            "/create",
@@ -136,7 +136,7 @@ func GetCreatePages(db *razlink.DB, hostname string) []*razlink.Page {
 			Path:            "/link/",
 			ContentTemplate: createResultPageT,
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
-				return handleCreateResultPage(db, hostname, r, view)
+				return handleCreateResultPage(db, r, view)
 			},
 		},
 		&razlink.Page{

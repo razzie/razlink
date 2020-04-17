@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	hostname := flag.String("hostname", "localhost:8080", "Hostname")
 	port := flag.Int("port", 8080, "Port")
 	redisAddr := flag.String("redis-addr", "localhost:6379", "Redis hostname:port")
 	redisPw := flag.String("redis-pw", "", "Redis password")
@@ -34,7 +33,7 @@ func main() {
 		addr := "localhost:" + strconv.Itoa(*port)
 		srv := razlink.NewServer()
 		if !*viewMode {
-			srv.AddPages(append(pages.GetCreatePages(db, *hostname), pages.GetWelcomePage())...)
+			srv.AddPages(append(pages.GetCreatePages(db), pages.GetWelcomePage())...)
 		}
 		srv.AddPages(append(pages.GetLogPages(db, 20), pages.GetViewPage(db))...)
 		http.ListenAndServe(addr, srv)
