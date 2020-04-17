@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ func main() {
 
 	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	defer db.Close()
@@ -36,6 +37,6 @@ func main() {
 			srv.AddPages(append(pages.GetCreatePages(db), pages.GetWelcomePage())...)
 		}
 		srv.AddPages(append(pages.GetLogPages(db, 20), pages.GetViewPage(db))...)
-		http.ListenAndServe(addr, srv)
+		log.Fatal(http.ListenAndServe(addr, srv))
 	}
 }
