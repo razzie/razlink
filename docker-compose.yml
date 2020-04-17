@@ -1,6 +1,16 @@
-version: '3'
+version: "2"
 
 services:
-  razlink:
-    build: .
-    image: gorzsony/razlink
+  app:
+    image: golang:alpine
+    ports:
+      - "8080"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: go run -mod=vendor ./cmd/razlink -redis-addr redis:6379
+
+  redis:
+    image: redis:alpine
+    volumes:
+    - ./redis-data:/data

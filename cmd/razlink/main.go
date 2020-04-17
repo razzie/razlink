@@ -30,7 +30,7 @@ func main() {
 		NewCLI(db).Run()
 	} else {
 		fmt.Println("Starting Razlink instance:", razlink.InstanceID)
-		addr := "localhost:" + strconv.Itoa(*port)
+		addr := ":" + strconv.Itoa(*port)
 		srv := razlink.NewServer()
 		if !*viewMode {
 			srv.AddPages(append(pages.GetCreatePages(db), pages.GetWelcomePage())...)
