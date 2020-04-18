@@ -8,6 +8,9 @@ services:
     volumes:
       - .:/app
     working_dir: /app
+    environment:
+      - VIRTUAL_HOST=link.gorzsony.com
+      - VIRTUAL_PORT=8080
     command: go run -mod=vendor ./cmd/razlink -redis-addr redis:6379
 
   redis:
