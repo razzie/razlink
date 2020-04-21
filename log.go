@@ -1,6 +1,7 @@
 package razlink
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mssola/user_agent"
+	"github.com/razzie/geoip-server/client"
 )
 
 // Log ...
@@ -41,10 +43,14 @@ func NewLog(r *http.Request) Log {
 		l.Hostnames = l.Hostnames[:5]
 	}
 
-	loc, _ := GetLocation(ip)
+	if IsPrivateIP(net.ParseIP(ip)) {
+		ip = ""
+	}
+
+	loc, _ := client.DefaultClient.GetLocation(context.Background(), ip)
 	if loc != nil {
-		l.CountryName = loc.CountryName
-		l.RegionName = loc.RegionName
+		l.CountryName = loc.Country
+		l.RegionName = loc.Region
 		l.City = loc.City
 	}
 
