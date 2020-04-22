@@ -1,12 +1,15 @@
-// Copyright (C) 2012-2018 Miquel Sabaté Solà <mikisabate@gmail.com>
+// Copyright (C) 2012-2020 Miquel Sabaté Solà <mikisabate@gmail.com>
 // This file is licensed under the MIT license.
 // See the LICENSE file.
 
 package user_agent
 
-import "strings"
+import (
+	"strings"
+)
 
-// Represents full information on the operating system extracted from the user agent.
+// OSInfo represents full information on the operating system extracted from the
+// user agent.
 type OSInfo struct {
 	// Full name of the operating system. This is identical to the output of ua.OS()
 	FullName string
@@ -89,7 +92,7 @@ func webkit(p *UserAgent, comment []string) {
 		if len(comment) > 3 {
 			p.localization = comment[3]
 		} else if len(comment) == 3 {
-			_ = p.googleBot()
+			_ = p.googleOrBingBot()
 		}
 	} else if len(comment) > 0 {
 		if len(comment) > 3 {
@@ -100,7 +103,7 @@ func webkit(p *UserAgent, comment []string) {
 		} else if len(comment) < 2 {
 			p.localization = comment[0]
 		} else if len(comment) < 3 {
-			if !p.googleBot() {
+			if !p.googleOrBingBot() && !p.iMessagePreview() {
 				p.os = normalizeOS(comment[1])
 			}
 		} else {
@@ -282,17 +285,17 @@ func (p *UserAgent) detectOS(s section) {
 	}
 }
 
-// Returns a string containing the platform..
+// Platform returns a string containing the platform..
 func (p *UserAgent) Platform() string {
 	return p.platform
 }
 
-// Returns a string containing the name of the Operating System.
+// OS returns a string containing the name of the Operating System.
 func (p *UserAgent) OS() string {
 	return p.os
 }
 
-// Returns a string containing the localization.
+// Localization returns a string containing the localization.
 func (p *UserAgent) Localization() string {
 	return p.localization
 }
@@ -325,7 +328,7 @@ func osName(osSplit []string) (name, version string) {
 	return name, version
 }
 
-// Returns combined information for the operating system.
+// OSInfo returns combined information for the operating system.
 func (p *UserAgent) OSInfo() OSInfo {
 	// Special case for iPhone weirdness
 	os := strings.Replace(p.os, "like Mac OS X", "", 1)

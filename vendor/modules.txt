@@ -1,15 +1,3 @@
-# github.com/EDDYCJY/fake-useragent v0.2.0
-github.com/EDDYCJY/fake-useragent
-github.com/EDDYCJY/fake-useragent/setting
-github.com/EDDYCJY/fake-useragent/spiders
-github.com/EDDYCJY/fake-useragent/useragent
-github.com/EDDYCJY/fake-useragent/useragent/cache
-github.com/EDDYCJY/fake-useragent/downloader
-github.com/EDDYCJY/fake-useragent/scheduler
-# github.com/PuerkitoBio/goquery v1.5.1
-github.com/PuerkitoBio/goquery
-# github.com/andybalholm/cascadia v1.1.0
-github.com/andybalholm/cascadia
 # github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496
 github.com/asaskevich/govalidator
 # github.com/biter777/countries v1.3.1
@@ -22,13 +10,10 @@ github.com/go-redis/redis/v7/internal/hashtag
 github.com/go-redis/redis/v7/internal/pool
 github.com/go-redis/redis/v7/internal/proto
 github.com/go-redis/redis/v7/internal/util
-# github.com/mssola/user_agent v0.5.0
+# github.com/mssola/user_agent v0.5.2
 github.com/mssola/user_agent
-# github.com/razzie/geoip-server v0.0.0-20200421232040-2168a5992d50
+# github.com/razzie/geoip-server v0.0.0-20200422034045-b8cbea961993
 github.com/razzie/geoip-server/client
 github.com/razzie/geoip-server/geoip
 # github.com/thedevsaddam/gojsonq v2.3.0+incompatible
 github.com/thedevsaddam/gojsonq
-# golang.org/x/net v0.0.0-20200202094626-16171245cfb2
-golang.org/x/net/html
-golang.org/x/net/html/atom

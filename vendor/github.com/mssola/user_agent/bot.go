@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Miquel Sabaté Solà <mikisabate@gmail.com>
+// Copyright (C) 2014-2020 Miquel Sabaté Solà <mikisabate@gmail.com>
 // This file is licensed under the MIT license.
 // See the LICENSE file.
 
@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var botFromSiteRegexp = regexp.MustCompile("http://.+\\.\\w+")
+var botFromSiteRegexp = regexp.MustCompile("http[s]?://.+\\.\\w+")
 
 // Get the name of the bot from the website that may be in the given comment. If
 // there is no website in the comment, then an empty string is returned.
@@ -22,6 +22,8 @@ func getFromSite(comment []string) string {
 	idx := 2
 	if len(comment) < 3 {
 		idx = 0
+	} else if len(comment) == 4 {
+		idx = 3
 	}
 
 	// Pick the site.
@@ -34,22 +36,45 @@ func getFromSite(comment []string) string {
 
 		// This is a large comment, usually the name will be in the previous
 		// field of the comment.
-		return strings.TrimSpace(comment[1])
+		return strings.TrimSpace(comment[idx-1])
 	}
 	return ""
 }
 
 // Returns true if the info that we currently have corresponds to the Google
-// mobile bot. This function also modifies some attributes in the receiver
+// or Bing mobile bot. This function also modifies some attributes in the receiver
 // accordingly.
-func (p *UserAgent) googleBot() bool {
-	// This is a hackish way to detect Google's mobile bot (Googlebot, AdsBot-Google-Mobile, etc.).
-	// See https://support.google.com/webmasters/answer/1061943
-	if strings.Index(p.ua, "Google") != -1 {
+func (p *UserAgent) googleOrBingBot() bool {
+	// This is a hackish way to detect
+	// Google's mobile bot (Googlebot, AdsBot-Google-Mobile, etc.)
+	// (See https://support.google.com/webmasters/answer/1061943)
+	// and Bing's mobile bot
+	// (See https://www.bing.com/webmaster/help/which-crawlers-does-bing-use-8c184ec0)
+	if strings.Index(p.ua, "Google") != -1 || strings.Index(p.ua, "bingbot") != -1 {
 		p.platform = ""
 		p.undecided = true
 	}
 	return p.undecided
+}
+
+// Returns true if we think that it is iMessage-Preview. This function also
+// modifies some attributes in the receiver accordingly.
+func (p *UserAgent) iMessagePreview() bool {
+	// iMessage-Preview doesn't advertise itself. We have a to rely on a hack
+	// to detect it: it impersonates both facebook and twitter bots.
+	// See https://medium.com/@siggi/apples-imessage-impersonates-twitter-facebook-bots-when-scraping-cef85b2cbb7d
+	if strings.Index(p.ua, "facebookexternalhit") == -1 {
+		return false
+	}
+	if strings.Index(p.ua, "Twitterbot") == -1 {
+		return false
+	}
+	p.bot = true
+	p.browser.Name = "iMessage-Preview"
+	p.browser.Engine = ""
+	p.browser.EngineVersion = ""
+	// We don't set the mobile flag because iMessage can be on iOS (mobile) or macOS (not mobile).
+	return true
 }
 
 // Set the attributes of the receiver as given by the parameters. All the other

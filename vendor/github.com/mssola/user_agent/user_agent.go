@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2018 Miquel Sabaté Solà <mikisabate@gmail.com>
+// Copyright (C) 2012-2020 Miquel Sabaté Solà <mikisabate@gmail.com>
 // This file is licensed under the MIT license.
 // See the LICENSE file.
 
@@ -85,13 +85,25 @@ func parseProduct(product []byte) (string, string) {
 // Returns a section containing the information that we could extract
 // from the last parsed section.
 func parseSection(ua string, index *int) (s section) {
-	buffer := readUntil(ua, index, ' ', false)
+	var buffer []byte
 
-	s.name, s.version = parseProduct(buffer)
+	// Check for empty products
+	if *index < len(ua) && ua[*index] != '(' && ua[*index] != '[' {
+		buffer = readUntil(ua, index, ' ', false)
+		s.name, s.version = parseProduct(buffer)
+	}
+
 	if *index < len(ua) && ua[*index] == '(' {
 		*index++
 		buffer = readUntil(ua, index, ')', true)
 		s.comment = strings.Split(string(buffer), "; ")
+		*index++
+	}
+
+	// Discards any trailing data within square brackets
+	if *index < len(ua) && ua[*index] == '[' {
+		*index++
+		buffer = readUntil(ua, index, ']', true)
 		*index++
 	}
 	return s
@@ -113,7 +125,8 @@ func (p *UserAgent) initialize() {
 	p.undecided = false
 }
 
-// Parse the given User-Agent string and get the resulting UserAgent object.
+// New parses the given User-Agent string and get the resulting UserAgent
+// object.
 //
 // Returns an UserAgent object that has been initialized after parsing
 // the given User-Agent string.
@@ -152,23 +165,23 @@ func (p *UserAgent) Parse(ua string) {
 	}
 }
 
-// Returns the mozilla version (it's how the User Agent string begins:
+// Mozilla returns the mozilla version (it's how the User Agent string begins:
 // "Mozilla/5.0 ...", unless we're dealing with Opera, of course).
 func (p *UserAgent) Mozilla() string {
 	return p.mozilla
 }
 
-// Returns true if it's a bot, false otherwise.
+// Bot returns true if it's a bot, false otherwise.
 func (p *UserAgent) Bot() bool {
 	return p.bot
 }
 
-// Returns true if it's a mobile device, false otherwise.
+// Mobile returns true if it's a mobile device, false otherwise.
 func (p *UserAgent) Mobile() bool {
 	return p.mobile
 }
 
-// Returns the original given user agent.
+// UA returns the original given user agent.
 func (p *UserAgent) UA() string {
 	return p.ua
 }
