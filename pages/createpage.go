@@ -104,9 +104,12 @@ func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFu
 	cookie, _ := r.Cookie(id)
 	if cookie != nil && cookie.Value == e.PasswordHash {
 		data.URL = e.URL
-		u, _ := url.Parse(e.URL)
-		if u != nil {
-			data.ShorthandURL = u.Host + razlink.GetShorthandPath(u.Path)
+
+		if e.URL != "." {
+			u, _ := url.Parse(e.URL)
+			if u != nil {
+				data.ShorthandURL = u.Host + razlink.GetShorthandPath(u.Path)
+			}
 		}
 
 		filename := filepath.Base(e.URL)
