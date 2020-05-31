@@ -182,7 +182,7 @@ func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFun
 // GetLogPages ...
 func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 	return []*razlink.Page{
-		&razlink.Page{
+		{
 			Path:            "/logs/",
 			Title:           "Logs",
 			ContentTemplate: logPageT,
@@ -190,7 +190,7 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 				return handleLogPage(db, logsPerPage, r, view)
 			},
 		},
-		&razlink.Page{
+		{
 			Path:            "/logs-auth/",
 			Title:           "Logs authentication",
 			ContentTemplate: logAuthPageT,
@@ -198,13 +198,13 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 				return handleLogAuthPage(db, r, view)
 			},
 		},
-		&razlink.Page{
+		{
 			Path: "/logs-clear/",
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
 				return handleLogClear(db, r)
 			},
 		},
-		&razlink.Page{
+		{
 			Path:            "/logs-change-password/",
 			Title:           "Change password",
 			ContentTemplate: logChangePwPageT,

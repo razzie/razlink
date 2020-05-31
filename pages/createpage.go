@@ -127,7 +127,7 @@ func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFu
 // GetCreatePages ...
 func GetCreatePages(db *razlink.DB) []*razlink.Page {
 	return []*razlink.Page{
-		&razlink.Page{
+		{
 			Path:            "/create",
 			Title:           "Create a new link",
 			ContentTemplate: createPageT,
@@ -135,14 +135,14 @@ func GetCreatePages(db *razlink.DB) []*razlink.Page {
 				return handleCreatePage(db, r, view)
 			},
 		},
-		&razlink.Page{
+		{
 			Path:            "/link/",
 			ContentTemplate: createResultPageT,
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
 				return handleCreateResultPage(db, r, view)
 			},
 		},
-		&razlink.Page{
+		{
 			Path: "/add/", // for legacy bookmarks
 			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
 				id, _ := getIDFromRequest(r)
