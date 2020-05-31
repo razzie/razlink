@@ -31,48 +31,48 @@ var logChangePwPageT = `
 `
 
 var logPageT = `
-{{if .Logs}}
-	<table>
-		<tr>
-			<td>Time</td>
-			<td>IP</td>
-			<td>Hostnames</td>
-			<td>Country</td>
-			<td>Region</td>
-			<td>City</td>
-			<td>OS</td>
-			<td>Browser</td>
-			<td>Referer</td>
-		</tr>
-		{{range .Logs}}
-		<tr>
-			<td>{{.Time.Format "Mon, 02 Jan 2006 15:04:05 MST"}}</td>
-			<td>{{.IP}}</td>
-			<td>
-				{{range .Hostnames}}
-				{{.}}<br />
-				{{end}}
-			</td>
-			<td>{{.CountryName}}</td>
-			<td>{{.RegionName}}</td>
-			<td>{{.City}}</td>
-			<td>{{.OS}}</td>
-			<td>{{.Browser}}</td>
-			<td>{{.Referer}}</td>
-		</tr>
-		{{end}}
-	</table>
-	<form method="get">
-		{{$ID := .ID}}
-		{{range .Pages}}
-			<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
-		{{end}}
-		<button formaction="/logs-clear/{{$ID}}/" onclick="return confirm('Are you sure?')">clear</button>
-		<button formaction="/logs-change-password/{{$ID}}/">change password</button>
-	</form>
-{{else}}
-	<strong>No logs yet!</strong>
-{{end}}
+<table>
+	<tr>
+		<td>Time</td>
+		<td>IP</td>
+		<td>Hostnames</td>
+		<td>Country</td>
+		<td>Region</td>
+		<td>City</td>
+		<td>OS</td>
+		<td>Browser</td>
+		<td>Referer</td>
+	</tr>
+	{{range .Logs}}
+	<tr>
+		<td>{{.Time.Format "Mon, 02 Jan 2006 15:04:05 MST"}}</td>
+		<td>{{.IP}}</td>
+		<td>
+			{{range .Hostnames}}
+			{{.}}<br />
+			{{end}}
+		</td>
+		<td>{{.CountryName}}</td>
+		<td>{{.RegionName}}</td>
+		<td>{{.City}}</td>
+		<td>{{.OS}}</td>
+		<td>{{.Browser}}</td>
+		<td>{{.Referer}}</td>
+	</tr>
+	{{else}}
+	<tr>
+		<td colspan="9" style="text-align: center"><strong>No logs yet!</strong></td>
+	</tr>
+	{{end}}
+</table>
+<form method="get">
+	{{$ID := .ID}}
+	{{range .Pages}}
+		<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
+	{{end}}
+	<button formaction="/logs-clear/{{$ID}}/" onclick="return confirm('Are you sure?')">clear</button>
+	<button formaction="/logs-change-password/{{$ID}}/">change password</button>
+</form>
 `
 
 func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
