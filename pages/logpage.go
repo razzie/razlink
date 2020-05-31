@@ -67,7 +67,7 @@ var logPageT = `
 		{{range .Pages}}
 			<button formaction="/logs/{{$ID}}/{{.}}">{{.}}</button>
 		{{end}}
-		<button formaction="/logs-clear/{{$ID}}/">clear</button>
+		<button formaction="/logs-clear/{{$ID}}/" onclick="return confirm('Are you sure?')">clear</button>
 		<button formaction="/logs-change-password/{{$ID}}/">change password</button>
 	</form>
 {{else}}
