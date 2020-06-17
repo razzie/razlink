@@ -55,9 +55,7 @@ func ErrorView(r *http.Request, errmsg string, errcode int, opts ...ViewOption) 
 		opt(v)
 	}
 	v.renderer = func(w http.ResponseWriter) {
-		w.WriteHeader(errcode)
-		w.WriteHeader(v.StatusCode)
-		errViewRenderer(w, r, errmsg, errmsg)
+		errViewRenderer(w, r, errmsg, errmsg, v.StatusCode)
 	}
 	return v
 }

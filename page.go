@@ -26,16 +26,15 @@ type PageRequest struct {
 
 // Respond returns the default page response View
 func (r *PageRequest) Respond(data interface{}, opts ...ViewOption) *View {
-	renderer := func(w http.ResponseWriter) {
-		r.renderer(w, r.Request, r.Title, data)
-	}
 	v := &View{
 		StatusCode: http.StatusOK,
 		Data:       data,
-		renderer:   renderer,
 	}
 	for _, opt := range opts {
 		opt(v)
+	}
+	v.renderer = func(w http.ResponseWriter) {
+		r.renderer(w, r.Request, r.Title, data, v.StatusCode)
 	}
 	return v
 }
