@@ -1,17 +1,15 @@
 package pages
 
 import (
-	"net/http"
 	"strings"
+
+	"github.com/razzie/razlink"
 )
 
-func getIDFromRequest(r *http.Request) (id string, trailing string) {
-	parts := strings.SplitN(r.URL.Path, "/", 4) // example: /logs/<id>/<page>
-	if len(parts) >= 3 {
-		id = parts[2]
-		if len(parts) >= 4 {
-			trailing = parts[3]
-		}
+func getIDFromRequest(r *razlink.PageRequest) (id, trailing string) {
+	parts := strings.SplitN(r.RelPath, "/", 2)
+	if len(parts) > 1 {
+		return parts[0], parts[1]
 	}
-	return
+	return parts[0], ""
 }

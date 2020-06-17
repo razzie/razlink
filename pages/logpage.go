@@ -75,85 +75,87 @@ var logPageT = `
 </form>
 `
 
-func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
-	id, _ := getIDFromRequest(r)
+func handleLogAuthPage(db *razlink.DB, pr *razlink.PageRequest) *razlink.View {
+	id, _ := getIDFromRequest(pr)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+		return pr.ErrorView("Not found", http.StatusNotFound)
 	}
 
+	r := pr.Request
 	if r.Method == "POST" {
 		r.ParseForm()
 		pw := r.FormValue("password")
 
 		if !e.MatchPassword(pw) {
-			return view("Wrong password", nil)
+			return pr.Respond("Wrong password", razlink.WithErrorMessage("Wrong password", http.StatusUnauthorized))
 		}
 
 		cookie := &http.Cookie{Name: id, Value: e.PasswordHash, Path: "/"}
 		return razlink.CookieAndRedirectView(r, cookie, "/logs/"+id)
 	}
 
-	return view(nil, nil)
+	return nil
 }
 
-func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) *razlink.View {
-	id, trailing := getIDFromRequest(r)
+func handleLogPage(db *razlink.DB, logsPerPage int, pr *razlink.PageRequest) *razlink.View {
+	id, trailing := getIDFromRequest(pr)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+		return pr.ErrorView("Not found", http.StatusNotFound)
 	}
 
-	cookie, _ := r.Cookie(id)
+	cookie, _ := pr.Request.Cookie(id)
 	if cookie == nil || cookie.Value != e.PasswordHash {
-		return razlink.RedirectView(r, "/logs-auth/"+id)
+		return pr.RedirectView("/logs-auth/" + id)
 	}
 
 	var first, last int
 	var logs []razlink.Log
-	title := "Logs of " + id
+	pr.Title = "Logs of " + id
 	pageCount := getLogPageCount(db, id, logsPerPage)
 
 	if _, err := fmt.Sscanf(trailing, "%d..%d", &first, &last); err != nil {
 		page, _ := strconv.Atoi(trailing)
 		if page < 1 {
-			return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/1", id))
+			return pr.RedirectView(fmt.Sprintf("/logs/%s/1", id))
 		} else if page > pageCount {
-			return razlink.RedirectView(r, fmt.Sprintf("/logs/%s/%d", id, pageCount))
+			return pr.RedirectView(fmt.Sprintf("/logs/%s/%d", id, pageCount))
 		}
 		first = (page - 1) * logsPerPage
 		last = (page * logsPerPage) - 1
 	}
 
 	logs, _ = db.GetLogs(id, first, last)
-	return view(newLogPageData(id, logs, pageCount), &title)
+	return pr.Respond(newLogPageData(id, logs, pageCount))
 }
 
-func handleLogClear(db *razlink.DB, r *http.Request) *razlink.View {
-	id, _ := getIDFromRequest(r)
+func handleLogClear(db *razlink.DB, pr *razlink.PageRequest) *razlink.View {
+	id, _ := getIDFromRequest(pr)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+		return pr.ErrorView("Not found", http.StatusNotFound)
 	}
 
-	cookie, _ := r.Cookie(id)
+	cookie, _ := pr.Request.Cookie(id)
 	if cookie == nil || cookie.Value != e.PasswordHash {
-		return razlink.RedirectView(r, "/logs-auth/"+id)
+		return pr.RedirectView("/logs-auth/" + id)
 	}
 
 	db.DeleteLogs(id)
-	return razlink.RedirectView(r, "/logs/"+id+"/1")
+	return pr.RedirectView("/logs/" + id + "/1")
 }
 
-func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
-	id, _ := getIDFromRequest(r)
+func handleLogChangePwPage(db *razlink.DB, pr *razlink.PageRequest) *razlink.View {
+	id, _ := getIDFromRequest(pr)
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+		return pr.ErrorView("Not found", http.StatusNotFound)
 	}
 
+	r := pr.Request
 	if r.Method != "POST" {
-		return view(nil, nil)
+		return nil
 	}
 
 	r.ParseForm()
@@ -162,11 +164,11 @@ func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFun
 	pw2 := r.FormValue("confirm_password")
 
 	if pw != pw2 {
-		return view("Password mismatch", nil)
+		return pr.Respond("Password mismatch", razlink.WithErrorMessage("Password mismatch", http.StatusUnauthorized))
 	}
 
 	if !e.MatchPassword(oldpw) {
-		return view("Wrong old password", nil)
+		return pr.Respond("Wrong old password", razlink.WithErrorMessage("Wrong old password", http.StatusUnauthorized))
 	}
 
 	e.SetPassword(pw)
@@ -186,30 +188,30 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path:            "/logs/",
 			Title:           "Logs",
 			ContentTemplate: logPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleLogPage(db, logsPerPage, r, view)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleLogPage(db, logsPerPage, pr)
 			},
 		},
 		{
 			Path:            "/logs-auth/",
 			Title:           "Logs authentication",
 			ContentTemplate: logAuthPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleLogAuthPage(db, r, view)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleLogAuthPage(db, pr)
 			},
 		},
 		{
 			Path: "/logs-clear/",
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleLogClear(db, r)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleLogClear(db, pr)
 			},
 		},
 		{
 			Path:            "/logs-change-password/",
 			Title:           "Change password",
 			ContentTemplate: logChangePwPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleLogChangePwPage(db, r, view)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleLogChangePwPage(db, pr)
 			},
 		},
 	}

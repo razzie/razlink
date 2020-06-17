@@ -24,11 +24,16 @@ func (view *View) Render(w http.ResponseWriter) {
 type ViewOption func(view *View)
 
 // WithError ...
-func WithError(err error, statusCode int) ViewOption {
+func WithError(err error, errcode int) ViewOption {
 	return func(view *View) {
 		view.Error = err
-		view.StatusCode = statusCode
+		view.StatusCode = errcode
 	}
+}
+
+// WithErrorMessage ...
+func WithErrorMessage(errmsg string, errcode int) ViewOption {
+	return WithError(fmt.Errorf("%s", errmsg), errcode)
 }
 
 // WithData ...
@@ -57,6 +62,11 @@ func ErrorView(r *http.Request, errmsg string, errcode int, opts ...ViewOption) 
 	return v
 }
 
+// ErrorView ...
+func (r *PageRequest) ErrorView(errmsg string, errcode int, opts ...ViewOption) *View {
+	return ErrorView(r.Request, errmsg, errcode, opts...)
+}
+
 // EmbedView returns a View that embeds the given website
 func EmbedView(url string, opts ...ViewOption) *View {
 	renderer := func(w http.ResponseWriter) {
@@ -72,6 +82,11 @@ func EmbedView(url string, opts ...ViewOption) *View {
 		opt(v)
 	}
 	return v
+}
+
+// EmbedView ...
+func (r *PageRequest) EmbedView(url string, opts ...ViewOption) *View {
+	return EmbedView(url, opts...)
 }
 
 // RedirectView ...
@@ -90,6 +105,11 @@ func RedirectView(r *http.Request, url string, opts ...ViewOption) *View {
 	return v
 }
 
+// RedirectView ...
+func (r *PageRequest) RedirectView(url string, opts ...ViewOption) *View {
+	return RedirectView(r.Request, url, opts...)
+}
+
 // CookieAndRedirectView ...
 func CookieAndRedirectView(r *http.Request, cookie *http.Cookie, url string, opts ...ViewOption) *View {
 	renderer := func(w http.ResponseWriter) {
@@ -105,6 +125,11 @@ func CookieAndRedirectView(r *http.Request, cookie *http.Cookie, url string, opt
 		opt(v)
 	}
 	return v
+}
+
+// CookieAndRedirectView ...
+func (r *PageRequest) CookieAndRedirectView(cookie *http.Cookie, url string, opts ...ViewOption) *View {
+	return CookieAndRedirectView(r.Request, cookie, url, opts...)
 }
 
 // CopyView ...
@@ -128,6 +153,11 @@ func CopyView(resp *http.Response, opts ...ViewOption) *View {
 	return v
 }
 
+// CopyView ...
+func (r *PageRequest) CopyView(resp *http.Response, opts ...ViewOption) *View {
+	return CopyView(resp, opts...)
+}
+
 // AsyncCopyView ...
 func AsyncCopyView(resp *http.Response, opts ...ViewOption) *View {
 	renderer := func(w http.ResponseWriter) {
@@ -149,6 +179,11 @@ func AsyncCopyView(resp *http.Response, opts ...ViewOption) *View {
 	return v
 }
 
+// AsyncCopyView ...
+func (r *PageRequest) AsyncCopyView(resp *http.Response, opts ...ViewOption) *View {
+	return AsyncCopyView(resp, opts...)
+}
+
 // HandlerView ...
 func HandlerView(r *http.Request, handler http.HandlerFunc, opts ...ViewOption) *View {
 	renderer := func(w http.ResponseWriter) {
@@ -162,4 +197,9 @@ func HandlerView(r *http.Request, handler http.HandlerFunc, opts ...ViewOption) 
 		opt(v)
 	}
 	return v
+}
+
+// HandlerView ...
+func (r *PageRequest) HandlerView(handler http.HandlerFunc, opts ...ViewOption) *View {
+	return HandlerView(r.Request, handler, opts...)
 }

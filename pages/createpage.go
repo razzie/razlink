@@ -45,9 +45,10 @@ Access logs:<br />
 <a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
 `
 
-func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
+func handleCreatePage(db *razlink.DB, pr *razlink.PageRequest) *razlink.View {
+	r := pr.Request
 	if r.Method != "POST" {
-		return view(nil, nil)
+		return nil
 	}
 
 	r.ParseForm()
@@ -56,7 +57,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *r
 	pw2 := r.FormValue("confirm_password")
 
 	if pw != pw2 {
-		return view("Password mismatch", nil)
+		return pr.Respond("Password mismatch")
 	}
 
 	if url != "." && !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
@@ -65,13 +66,13 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *r
 
 	method, err := razlink.GetServeMethodForURL(r.Context(), url, time.Second*3)
 	if err != nil {
-		return view(err.Error(), nil)
+		return pr.Respond(err.Error(), razlink.WithError(err, http.StatusInternalServerError))
 	}
 
 	e := razlink.NewEntry(url, pw, method)
 	id, err := db.InsertEntry(nil, e)
 	if err != nil {
-		return razlink.ErrorView(r, err.Error(), http.StatusInternalServerError)
+		return pr.ErrorView(err.Error(), http.StatusInternalServerError)
 	}
 
 	db.InsertLog(id, r)
@@ -80,12 +81,12 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *r
 	return razlink.CookieAndRedirectView(r, cookie, "/link/"+id)
 }
 
-func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
-	id, _ := getIDFromRequest(r)
+func handleCreateResultPage(db *razlink.DB, pr *razlink.PageRequest) *razlink.View {
+	id, _ := getIDFromRequest(pr)
 
 	e, _ := db.GetEntry(id)
 	if e == nil {
-		return razlink.ErrorView(r, "Not found", http.StatusNotFound)
+		return pr.ErrorView("Not found", http.StatusNotFound)
 	}
 
 	data := struct {
@@ -96,12 +97,12 @@ func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFu
 		Decoy        string
 		Track        bool
 	}{
-		Hostname: r.Host,
+		Hostname: pr.Request.Host,
 		ID:       id,
 		Track:    e.Method == razlink.Track,
 	}
 
-	cookie, _ := r.Cookie(id)
+	cookie, _ := pr.Request.Cookie(id)
 	if cookie != nil && cookie.Value == e.PasswordHash {
 		data.URL = e.URL
 
@@ -120,8 +121,8 @@ func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFu
 		}
 	}
 
-	title := "Link: " + id
-	return view(&data, &title)
+	pr.Title = "Link: " + id
+	return pr.Respond(&data)
 }
 
 // GetCreatePages ...
@@ -131,22 +132,22 @@ func GetCreatePages(db *razlink.DB) []*razlink.Page {
 			Path:            "/create",
 			Title:           "Create a new link",
 			ContentTemplate: createPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleCreatePage(db, r, view)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleCreatePage(db, pr)
 			},
 		},
 		{
 			Path:            "/link/",
 			ContentTemplate: createResultPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				return handleCreateResultPage(db, r, view)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				return handleCreateResultPage(db, pr)
 			},
 		},
 		{
 			Path: "/add/", // for legacy bookmarks
-			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
-				id, _ := getIDFromRequest(r)
-				return razlink.RedirectView(r, "/link/"+id)
+			Handler: func(pr *razlink.PageRequest) *razlink.View {
+				id, _ := getIDFromRequest(pr)
+				return pr.RedirectView("/link/" + id)
 			},
 		},
 	}
