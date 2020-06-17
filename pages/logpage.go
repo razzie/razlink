@@ -75,7 +75,7 @@ var logPageT = `
 </form>
 `
 
-func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -97,7 +97,7 @@ func handleLogAuthPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) r
 	return view(nil, nil)
 }
 
-func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlink.ViewFunc) *razlink.View {
 	id, trailing := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -129,7 +129,7 @@ func handleLogPage(db *razlink.DB, logsPerPage int, r *http.Request, view razlin
 	return view(newLogPageData(id, logs, pageCount), &title)
 }
 
-func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {
+func handleLogClear(db *razlink.DB, r *http.Request) *razlink.View {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -145,7 +145,7 @@ func handleLogClear(db *razlink.DB, r *http.Request) razlink.PageView {
 	return razlink.RedirectView(r, "/logs/"+id+"/1")
 }
 
-func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleLogChangePwPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -186,7 +186,7 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path:            "/logs/",
 			Title:           "Logs",
 			ContentTemplate: logPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleLogPage(db, logsPerPage, r, view)
 			},
 		},
@@ -194,13 +194,13 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path:            "/logs-auth/",
 			Title:           "Logs authentication",
 			ContentTemplate: logAuthPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleLogAuthPage(db, r, view)
 			},
 		},
 		{
 			Path: "/logs-clear/",
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleLogClear(db, r)
 			},
 		},
@@ -208,7 +208,7 @@ func GetLogPages(db *razlink.DB, logsPerPage int) []*razlink.Page {
 			Path:            "/logs-change-password/",
 			Title:           "Change password",
 			ContentTemplate: logChangePwPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleLogChangePwPage(db, r, view)
 			},
 		},

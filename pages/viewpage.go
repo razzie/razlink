@@ -6,7 +6,7 @@ import (
 	"github.com/razzie/razlink"
 )
 
-func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
+func handleViewPage(db *razlink.DB, r *http.Request) *razlink.View {
 	id, _ := getIDFromRequest(r)
 	e, _ := db.GetEntry(id)
 	if e == nil {
@@ -52,7 +52,7 @@ func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 		return razlink.RedirectView(r, e.URL)
 
 	case razlink.Track:
-		return razlink.WritePixel
+		return razlink.HandlerView(r, razlink.WritePixel)
 
 	default:
 		return razlink.ErrorView(r, "Invalid serve method", http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func handleViewPage(db *razlink.DB, r *http.Request) razlink.PageView {
 func GetViewPage(db *razlink.DB) *razlink.Page {
 	return &razlink.Page{
 		Path: "/x/",
-		Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+		Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 			return handleViewPage(db, r)
 		},
 	}

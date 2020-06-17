@@ -28,7 +28,7 @@ func GetWelcomePage() *razlink.Page {
 		Path:            "/",
 		Title:           "Welcome to razlink!",
 		ContentTemplate: welcomePageT,
-		Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+		Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 			if len(r.URL.Path) > 1 {
 				return razlink.RedirectView(r, "/")
 			}

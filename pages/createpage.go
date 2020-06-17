@@ -45,7 +45,7 @@ Access logs:<br />
 <a href="http://{{.Hostname}}/logs/{{.ID}}">{{.Hostname}}/logs/{{.ID}}</a>
 `
 
-func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
 	if r.Method != "POST" {
 		return view(nil, nil)
 	}
@@ -80,7 +80,7 @@ func handleCreatePage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) ra
 	return razlink.CookieAndRedirectView(r, cookie, "/link/"+id)
 }
 
-func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) razlink.PageView {
+func handleCreateResultPage(db *razlink.DB, r *http.Request, view razlink.ViewFunc) *razlink.View {
 	id, _ := getIDFromRequest(r)
 
 	e, _ := db.GetEntry(id)
@@ -131,20 +131,20 @@ func GetCreatePages(db *razlink.DB) []*razlink.Page {
 			Path:            "/create",
 			Title:           "Create a new link",
 			ContentTemplate: createPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleCreatePage(db, r, view)
 			},
 		},
 		{
 			Path:            "/link/",
 			ContentTemplate: createResultPageT,
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				return handleCreateResultPage(db, r, view)
 			},
 		},
 		{
 			Path: "/add/", // for legacy bookmarks
-			Handler: func(r *http.Request, view razlink.ViewFunc) razlink.PageView {
+			Handler: func(r *http.Request, view razlink.ViewFunc) *razlink.View {
 				id, _ := getIDFromRequest(r)
 				return razlink.RedirectView(r, "/link/"+id)
 			},
