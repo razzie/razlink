@@ -107,7 +107,8 @@ func handleLogPage(db *razlink.DB, logsPerPage int, pr *razlink.PageRequest) *ra
 
 	cookie, _ := pr.Request.Cookie(id)
 	if cookie == nil || cookie.Value != e.PasswordHash {
-		return pr.RedirectView("/logs-auth/" + id)
+		return pr.RedirectView("/logs-auth/"+id,
+			razlink.WithErrorMessage("Unauthorized", http.StatusUnauthorized))
 	}
 
 	var first, last int
