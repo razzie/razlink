@@ -11,29 +11,41 @@ import (
 	"github.com/razzie/razlink/pages"
 )
 
+// Command-line args
+var (
+	Port      int
+	RedisAddr string
+	RedisPw   string
+	RedisDB   int
+	CLIMode   bool
+	ViewMode  bool
+)
+
+func init() {
+	flag.IntVar(&Port, "port", 8080, "Port")
+	flag.StringVar(&RedisAddr, "redis-addr", "localhost:6379", "Redis hostname:port")
+	flag.StringVar(&RedisPw, "redis-pw", "", "Redis password")
+	flag.IntVar(&RedisDB, "redis-db", 0, "Redis database (0-15)")
+	flag.BoolVar(&CLIMode, "cli", false, "Enable CLI mode instead of http server")
+	flag.BoolVar(&ViewMode, "view-mode", false, "View-mode disables welcome and create pages")
+}
+
 func main() {
-	port := flag.Int("port", 8080, "Port")
-	redisAddr := flag.String("redis-addr", "localhost:6379", "Redis hostname:port")
-	redisPw := flag.String("redis-pw", "", "Redis password")
-	redisDb := flag.Int("redis-db", 0, "Redis database (0-15)")
-	cliMode := flag.Bool("cli", false, "Enable CLI mode instead of http server")
-	viewMode := flag.Bool("view-mode", false, "View-mode disables welcome and create pages")
 	flag.Parse()
 
-	db, err := razlink.NewDB(*redisAddr, *redisPw, *redisDb)
+	db, err := razlink.NewDB(RedisAddr, RedisPw, RedisDB)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer db.Close()
 
-	if *cliMode {
+	if CLIMode {
 		NewCLI(db).Run()
 	} else {
 		fmt.Println("Starting Razlink instance:", razlink.InstanceID)
-		addr := ":" + strconv.Itoa(*port)
+		addr := ":" + strconv.Itoa(Port)
 		srv := razlink.NewServer()
-		if !*viewMode {
+		if !ViewMode {
 			srv.AddPages(append(pages.GetCreatePages(db), pages.GetWelcomePage())...)
 		}
 		srv.AddPages(append(pages.GetLogPages(db, 20), pages.GetViewPage(db))...)
