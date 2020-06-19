@@ -122,14 +122,22 @@ var layoutT = `
 </html>
 `
 
-var layout = template.Must(template.New("layout").Parse(layoutT))
+// Layout is used to give pages a uniform layout
+type Layout interface {
+	BindTemplate(pageTemplate string, stylesheets, scripts []string, meta map[string]string) (LayoutRenderer, error)
+}
 
 // LayoutRenderer is a function that renders a html page
 type LayoutRenderer func(w http.ResponseWriter, r *http.Request, title string, data interface{}, statusCode int)
 
-// BindLayout creates a layout renderer function
-func BindLayout(pageTemplate string, stylesheets, scripts []string, meta map[string]string) (LayoutRenderer, error) {
-	cloneLayout, _ := layout.Clone()
+// DefaultLayout is razlink's default layout
+var DefaultLayout Layout = (*layout)(template.Must(template.New("layout").Parse(layoutT)))
+
+type layout template.Template
+
+// BindTemplate creates a layout renderer function from a page template
+func (l *layout) BindTemplate(pageTemplate string, stylesheets, scripts []string, meta map[string]string) (LayoutRenderer, error) {
+	cloneLayout, _ := (*template.Template)(l).Clone()
 	tmpl, err := cloneLayout.New("page").Parse(pageTemplate)
 	if err != nil {
 		return nil, err

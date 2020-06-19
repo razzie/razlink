@@ -30,7 +30,12 @@ func NewServer() *Server {
 
 // AddPage adds a new servable page to the server
 func (srv *Server) AddPage(page *Page) error {
-	renderer, err := page.GetHandler()
+	return srv.AddPageWithLayout(page, DefaultLayout)
+}
+
+// AddPageWithLayout adds a new servable page with custom layout to the server
+func (srv *Server) AddPageWithLayout(page *Page, layout Layout) error {
+	renderer, err := page.GetHandler(layout)
 	if err != nil {
 		return err
 	}
