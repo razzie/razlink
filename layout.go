@@ -147,12 +147,6 @@ func (l *layout) BindTemplate(pageTemplate string, stylesheets, scripts []string
 		tmpl = template.Must(tmpl.New("style").Parse(styleT))
 	}
 
-	if meta == nil {
-		meta = map[string]string{
-			"author": "Gábor Görzsöny",
-		}
-	}
-
 	return func(w http.ResponseWriter, r *http.Request, title string, data interface{}, statusCode int) {
 		view := struct {
 			Title       string

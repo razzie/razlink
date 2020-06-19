@@ -12,7 +12,7 @@ type Page struct {
 	ContentTemplate string
 	Stylesheets     []string
 	Scripts         []string
-	Meta            map[string]string
+	Metadata        map[string]string
 	Handler         func(*PageRequest) *View
 }
 
@@ -42,7 +42,7 @@ func (r *PageRequest) Respond(data interface{}, opts ...ViewOption) *View {
 
 // GetHandler creates a http.HandlerFunc that uses the given layout to render the page
 func (page *Page) GetHandler(layout Layout) (http.HandlerFunc, error) {
-	renderer, err := layout.BindTemplate(page.ContentTemplate, page.Stylesheets, page.Scripts, page.Meta)
+	renderer, err := layout.BindTemplate(page.ContentTemplate, page.Stylesheets, page.Scripts, page.Metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -69,5 +69,14 @@ func (page *Page) newPageRequest(r *http.Request, renderer LayoutRenderer) *Page
 		RelURI:   strings.TrimPrefix(r.RequestURI, page.Path),
 		Title:    page.Title,
 		renderer: renderer,
+	}
+}
+
+func (page *Page) addMetadata(meta map[string]string) {
+	if page.Metadata == nil && len(meta) > 0 {
+		page.Metadata = make(map[string]string)
+	}
+	for name, content := range meta {
+		page.Metadata[name] = content
 	}
 }

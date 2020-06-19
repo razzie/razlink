@@ -10,12 +10,16 @@ import (
 type Server struct {
 	mux        http.ServeMux
 	FaviconPNG []byte
+	Metadata   map[string]string
 }
 
 // NewServer creates a new Server
 func NewServer() *Server {
 	srv := &Server{
 		FaviconPNG: favicon,
+		Metadata: map[string]string{
+			"author": "Gábor Görzsöny",
+		},
 	}
 	srv.mux.HandleFunc("/favicon.png", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
@@ -35,6 +39,7 @@ func (srv *Server) AddPage(page *Page) error {
 
 // AddPageWithLayout adds a new servable page with custom layout to the server
 func (srv *Server) AddPageWithLayout(page *Page, layout Layout) error {
+	page.addMetadata(srv.Metadata)
 	renderer, err := page.GetHandler(layout)
 	if err != nil {
 		return err
