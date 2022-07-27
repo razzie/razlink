@@ -13,19 +13,15 @@ import (
 
 // Command-line args
 var (
-	Port      int
-	RedisAddr string
-	RedisPw   string
-	RedisDB   int
-	CLIMode   bool
-	ViewMode  bool
+	Port         int
+	RedisConnStr string
+	CLIMode      bool
+	ViewMode     bool
 )
 
 func init() {
 	flag.IntVar(&Port, "port", 8080, "Port")
-	flag.StringVar(&RedisAddr, "redis-addr", "localhost:6379", "Redis hostname:port")
-	flag.StringVar(&RedisPw, "redis-pw", "", "Redis password")
-	flag.IntVar(&RedisDB, "redis-db", 0, "Redis database (0-15)")
+	flag.StringVar(&RedisConnStr, "redis", "redis://localhost:6379", "Redis connection string")
 	flag.BoolVar(&CLIMode, "cli", false, "Enable CLI mode instead of http server")
 	flag.BoolVar(&ViewMode, "view-mode", false, "View-mode disables welcome and create pages")
 }
@@ -33,7 +29,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	db, err := razlink.NewDB(RedisAddr, RedisPw, RedisDB)
+	db, err := razlink.NewDB(RedisConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
