@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -133,4 +134,25 @@ func GetShorthandPath(path string) string {
 		return path[:15] + ".." + path[len(path)-15:]
 	}
 	return path
+}
+
+// IsPrivateURL checks whether the host in the given URL resolves to a private IP address
+func IsPrivateURL(rawURL string) (bool, error) {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false, err
+	}
+
+	host := strings.SplitN(parsed.Host, ":", 2)[0]
+
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return false, err
+	}
+
+	if len(ips) == 0 {
+		return false, fmt.Errorf("no IPs found for host: %s", host)
+	}
+
+	return IsPrivateIP(ips[0]), nil
 }

@@ -2,6 +2,7 @@ package razlink
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -17,10 +18,17 @@ const (
 	Track
 )
 
-// GetServeMethodForURL tries to determine the best possible serve method for an url
+// GetServeMethodForURL tries to determine the best possible serve method for a URL
 func GetServeMethodForURL(ctx context.Context, url string, timeout time.Duration) (ServeMethod, error) {
 	if url == "." {
 		return Track, nil
+	}
+
+	if pvt, err := IsPrivateURL(url); pvt || err != nil {
+		if err == nil {
+			err = fmt.Errorf("the host is private")
+		}
+		return Redirect, err
 	}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
